@@ -5,7 +5,7 @@ db:
   url: db_url
 
 listener:
-  addr: :8000 # TODO configure and rm this TODO
+  addr: :8000
 
 cop:
   disabled: true

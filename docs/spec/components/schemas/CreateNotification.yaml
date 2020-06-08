@@ -1,0 +1,37 @@
+allOf:
+  - '#/components/schemas/CreateNotificationKey'
+  - type: object
+    required: [relationships, attributes]
+    properties:
+      relationships:
+        type: object
+        required:
+          - destinations
+        properties:
+          destinations:
+            type: array
+            properties:
+              data:
+                type: object
+                $ref: '#/components/schemas/DestinationKey'
+      attributes:
+        type: object
+        required:
+          - topic
+          - message
+        properties:
+          token:
+            type: string
+          send_time:
+            type: string
+            format: time.Time
+          topic:
+            type: string
+          locale:
+            type: string
+          priority:
+            type: integer
+          delivery_type:
+            type: string
+          message:
+            $ref: '#/components/schemas/Message'

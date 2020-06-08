@@ -17,7 +17,6 @@ type service struct {
 }
 
 func (s *service) run() error {
-    // TODO implement custom logic here
     r := s.router()
 
     if err := s.copus.RegisterChi(r); err != nil {
