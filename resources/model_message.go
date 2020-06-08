@@ -4,7 +4,9 @@
 
 package resources
 
+import "encoding/json"
+
 type Message struct {
-	Attributes map[string]interface{} `json:"attributes"`
-	Type       string                 `json:"type"`
+	Attributes json.RawMessage `json:"attributes"`
+	Type       string          `json:"type"`
 }

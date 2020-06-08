@@ -9,11 +9,14 @@ allOf:
           - destinations
         properties:
           destinations:
-            type: array
+            type: object
+            required:
+              - data
             properties:
               data:
-                type: object
-                $ref: '#/components/schemas/DestinationKey'
+                type: array
+                items:
+                  $ref: '#/components/schemas/DestinationKey'
       attributes:
         type: object
         required:

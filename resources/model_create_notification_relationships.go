@@ -5,5 +5,5 @@
 package resources
 
 type CreateNotificationRelationships struct {
-	Destinations map[string]interface{} `json:"destinations"`
+	Destinations RelationCollection `json:"destinations"`
 }
