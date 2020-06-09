@@ -9,7 +9,7 @@ require (
 	github.com/evalphobia/logrus_sentry v0.8.2 // indirect
 	github.com/getsentry/raven-go v0.2.0 // indirect
 	github.com/go-chi/chi v4.1.2+incompatible
-	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible // indirect
+	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
 	github.com/gobuffalo/packr/v2 v2.8.0
 	github.com/google/jsonapi v0.0.0-20200226002910-c8283f632fb7 // indirect
 	github.com/jmoiron/sqlx v1.2.0 // indirect
