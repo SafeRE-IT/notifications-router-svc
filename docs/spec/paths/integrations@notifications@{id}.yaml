@@ -1,0 +1,35 @@
+parameters:
+  - name: id
+    in: path
+    required: true
+    schema:
+      type: int
+
+get:
+  tags:
+    - Notifications
+  summary: Get notification
+  operationId: getNotification
+  parameters:
+    - name: 'include'
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+          - deliveries
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                $ref: '#/components/schemas/Notification'
+              included:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Delivery'

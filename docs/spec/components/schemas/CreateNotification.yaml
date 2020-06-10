@@ -1,5 +1,5 @@
 allOf:
-  - '#/components/schemas/CreateNotificationKey'
+  - $ref: '#/components/schemas/CreateNotificationKey'
   - type: object
     required: [relationships, attributes]
     properties:
@@ -25,16 +25,15 @@ allOf:
         properties:
           token:
             type: string
-          send_time:
+          scheduled_for:
             type: string
             format: time.Time
           topic:
             type: string
-          locale:
-            type: string
           priority:
-            type: integer
-          delivery_type:
+            type: int
+            default: 3
+          channel:
             type: string
           message:
             $ref: '#/components/schemas/Message'

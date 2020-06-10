@@ -6,10 +6,11 @@ package resources
 
 import "time"
 
-type CreateNotificationAttributes struct {
+type NotificationAttributes struct {
 	Channel      *string    `json:"channel,omitempty"`
+	CreatedAt    time.Time  `json:"created_at"`
 	Message      Message    `json:"message"`
-	Priority     *int       `json:"priority,omitempty"`
+	Priority     int        `json:"priority"`
 	ScheduledFor *time.Time `json:"scheduled_for,omitempty"`
 	Token        *string    `json:"token,omitempty"`
 	Topic        string     `json:"topic"`

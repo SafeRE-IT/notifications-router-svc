@@ -24,4 +24,59 @@ post:
             properties:
               data:
                 type: object
-                $ref: '#/components/schemas/CreateNotification'
+                $ref: '#/components/schemas/Notification'
+
+
+get:
+  tags:
+    - Notifications
+  summary: Get notifications list
+  operationId: getNotificationsList
+  parameters:
+    - $ref: '#/components/parameters/pageNumberParam'
+    - $ref: '#/components/parameters/pageLimitParam'
+    - $ref: '#/components/parameters/sortingParam'
+    - in: query
+      name: 'filter[token]'
+      required: false
+      schema:
+        type: string
+    - name: 'filter[destination_account]'
+      in: query
+      required: false
+      schema:
+        type: string
+    - name: 'include'
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+          - deliveries
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+              included:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Delivery'
+              links:
+                type: object
+                description: "Provides links for pagination"
+                properties:
+                  next:
+                    type: string
+                    description: "link to the next page"
+                  self:
+                    type: string
+                    description: "link to the current page"
+

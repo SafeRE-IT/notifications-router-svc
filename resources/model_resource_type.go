@@ -4,5 +4,11 @@
 
 package resources
 
-type ResourceType struct {
-}
+type ResourceType string
+
+// List of ResourceType
+const (
+	CREATE_NOTIFICATION   ResourceType = "create-notification"
+	NOTIFICATION_DELIVERY ResourceType = "notification-delivery"
+	NOTIFICATION          ResourceType = "notification"
+)

@@ -34,12 +34,12 @@ func (r *CreateNotificationRequest) validate() error {
 		"/data/attributes/topic": validation.Validate(&r.Data.Attributes.Topic, validation.Required,
 			validation.Length(3, 100)),
 		"/data/attributes/token": validation.Validate(&r.Data.Attributes.Token, validation.Length(3, 255)),
-		"/data/attributes/send_time": validation.Validate(&r.Data.Attributes.SendTime,
+		"/data/attributes/scheduled_for": validation.Validate(&r.Data.Attributes.ScheduledFor,
 			validation.Min(time.Now().UTC()).Error("should be UTC time in future")),
-		"/data/attributes/locale":        nil, // TODO: Check that it is a valid locale string
-		"/data/attributes/priority":      nil, // TODO: Check that it is a valid priority
-		"/data/attributes/delivery_type": nil, // TODO: Check that it is a valid delivery type
-		"/data/attributes/message":       validation.Validate(&r.Data.Attributes.Message, validation.Required),
+		"/data/attributes/locale":   nil, // TODO: Check that it is a valid locale string
+		"/data/attributes/priority": nil, // TODO: Check that it is a valid priority
+		"/data/attributes/channel":  nil, // TODO: Check that it is a valid delivery type
+		"/data/attributes/message":  validation.Validate(&r.Data.Attributes.Message, validation.Required),
 		// TODO: Check that it is in supported message types
 		"/data/attributes/message/type":       validation.Validate(&r.Data.Attributes.Message.Type, validation.Required),
 		"/data/attributes/message/attributes": validation.Validate(&r.Data.Attributes.Message.Attributes, validation.Required),
