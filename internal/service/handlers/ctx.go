@@ -4,7 +4,10 @@ import (
 	"context"
 	"net/http"
 
+	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
+
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/horizon"
 
 	"gitlab.com/distributed_lab/logan/v3"
 )
@@ -15,6 +18,8 @@ const (
 	logCtxKey ctxKey = iota
 	notificationsQCtxKey
 	deliveriesQCtxKey
+	horizonCtxKey
+	doormanCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -45,4 +50,25 @@ func CtxDeliveriesQ(entry data.DeliveriesQ) func(context.Context) context.Contex
 
 func DeliveriesQ(r *http.Request) data.DeliveriesQ {
 	return r.Context().Value(deliveriesQCtxKey).(data.DeliveriesQ).New()
+}
+
+func CtxHorizon(h *horizon.Connector) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, horizonCtxKey, h)
+	}
+}
+
+func Horizon(r *http.Request) *horizon.Connector {
+	return r.Context().Value(horizonCtxKey).(*horizon.Connector)
+}
+
+func CtxDoorman(d doorman.Doorman) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, doormanCtxKey, d)
+	}
+}
+
+func Doorman(r *http.Request, constraints ...doorman.SignerConstraint) error {
+	d := r.Context().Value(doormanCtxKey).(doorman.Doorman)
+	return d.Check(r, constraints...)
 }

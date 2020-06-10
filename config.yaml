@@ -1,6 +1,12 @@
 log:
   disable_sentry: true
 
+client:
+  endpoint: http://...
+
+keys:
+  signer: ...
+
 db:
   url: db_url
 

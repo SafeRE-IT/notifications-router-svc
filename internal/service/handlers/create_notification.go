@@ -23,6 +23,10 @@ func CreateNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !isAllowed(r, w) {
+		return
+	}
+
 	var resultNotification data.Notification
 	var resultDeliveries []data.Delivery
 
