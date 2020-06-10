@@ -10,6 +10,12 @@ import (
 )
 
 type NotificationsQ interface {
+	New() NotificationsQ
+
+	Get() (*Notification, error)
+	Select() ([]Notification, error)
+
+	Transaction(fn func(q NotificationsQ) error) error
 }
 
 type Notification struct {
@@ -18,9 +24,8 @@ type Notification struct {
 	ScheduledFor time.Time `db:"scheduled_for" structs:"scheduled_for"`
 	Topic        string    `db:"topic" structs:"topic"`
 	Token        *string   `db:"token" structs:"token"`
-	Locale       *string   `db:"locale" structs:"locale"`
 	Priority     int32     `db:"priority" structs:"priority"`
-	DeliveryType *string   `db:"delivery_type" structs:"delivery_type"`
+	Channel      *string   `db:"delivery_type" structs:"delivery_type"`
 	Message      Message   `db:"message" structs:"message"`
 }
 
