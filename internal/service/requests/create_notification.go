@@ -30,13 +30,14 @@ func (r *CreateNotificationRequest) validate() error {
 	return validation.Errors{
 		"/data/":               validation.Validate(&r.Data, validation.Required),
 		"/data/attributes/":    validation.Validate(&r.Data.Attributes, validation.Required),
-		"/data/relationships/": validation.Validate(&r.Data.Attributes, validation.Required),
+		"/data/relationships/": validation.Validate(&r.Data.Relationships, validation.Required),
+		"/data/relationships/destinations/data": validation.Validate(&r.Data.Relationships.Destinations.Data,
+			validation.Required, validation.Length(1, 100)),
 		"/data/attributes/topic": validation.Validate(&r.Data.Attributes.Topic, validation.Required,
 			validation.Length(3, 100)),
 		"/data/attributes/token": validation.Validate(&r.Data.Attributes.Token, validation.Length(3, 255)),
 		"/data/attributes/scheduled_for": validation.Validate(&r.Data.Attributes.ScheduledFor,
 			validation.Min(time.Now().UTC()).Error("should be UTC time in future")),
-		"/data/attributes/locale":   nil, // TODO: Check that it is a valid locale string
 		"/data/attributes/priority": nil, // TODO: Check that it is a valid priority
 		"/data/attributes/channel":  nil, // TODO: Check that it is a valid delivery type
 		"/data/attributes/message":  validation.Validate(&r.Data.Attributes.Message, validation.Required),

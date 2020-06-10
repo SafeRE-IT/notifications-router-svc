@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/go-chi/chi"
 	"gitlab.com/distributed_lab/ape"
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data/pg"
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/handlers"
 )
 
@@ -14,6 +15,8 @@ func (s *service) router() chi.Router {
 		ape.LoganMiddleware(s.log),
 		ape.CtxMiddleware(
 			handlers.CtxLog(s.log),
+			handlers.CtxNotificationsQ(pg.NewNotificationsQ(s.cfg.DB())),
+			handlers.CtxDeliveriesQ(pg.NewDeliveriesQ(s.cfg.DB())),
 		),
 	)
 

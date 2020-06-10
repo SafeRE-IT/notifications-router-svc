@@ -3,10 +3,11 @@ module gitlab.com/tokend/notifications/notifications-router-svc
 go 1.14
 
 require (
-	github.com/Masterminds/squirrel v1.4.0 // indirect
+	github.com/Masterminds/squirrel v1.4.0
 	github.com/alecthomas/kingpin v2.2.6+incompatible
 	github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894 // indirect
 	github.com/evalphobia/logrus_sentry v0.8.2 // indirect
+	github.com/fatih/structs v1.1.0
 	github.com/getsentry/raven-go v0.2.0 // indirect
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible

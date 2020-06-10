@@ -24,13 +24,14 @@ allOf:
           - priority
           - created_at
           - message
+          - scheduled_for
         properties:
           topic:
             type: string
           token:
             type: string
           priority:
-            type: int
+            type: int32
             enum:
               - 1
               - 2

@@ -16,17 +16,30 @@ type NotificationsQ interface {
 	Select() ([]Notification, error)
 
 	Transaction(fn func(q NotificationsQ) error) error
+
+	Insert(data Notification) (Notification, error)
+	InsertDeliveries(data []Delivery) ([]Delivery, error)
 }
 
+type NotificationPriority int32
+
+const (
+	NotificationsPriorityLowest NotificationPriority = iota + 1
+	NotificationsPriorityLow
+	NotificationsPriorityMedium
+	NotificationsPriorityHigh
+	NotificationsPriorityHighest
+)
+
 type Notification struct {
-	ID           int64     `db:"id" structs:"-"`
-	CreatedAt    time.Time `db:"created_at" structs:"created_at"`
-	ScheduledFor time.Time `db:"scheduled_for" structs:"scheduled_for"`
-	Topic        string    `db:"topic" structs:"topic"`
-	Token        *string   `db:"token" structs:"token"`
-	Priority     int32     `db:"priority" structs:"priority"`
-	Channel      *string   `db:"delivery_type" structs:"delivery_type"`
-	Message      Message   `db:"message" structs:"message"`
+	ID           int64                `db:"id" structs:"-"`
+	CreatedAt    time.Time            `db:"created_at" structs:"created_at"`
+	ScheduledFor time.Time            `db:"scheduled_for" structs:"scheduled_for"`
+	Topic        string               `db:"topic" structs:"topic"`
+	Token        *string              `db:"token" structs:"token"`
+	Priority     NotificationPriority `db:"priority" structs:"priority"`
+	Channel      *string              `db:"channel" structs:"channel"`
+	Message      Message              `db:"message" structs:"-"`
 }
 
 type Message resources.Message

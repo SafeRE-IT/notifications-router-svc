@@ -15,6 +15,9 @@ github.com/certifi/gocertifi
 # github.com/evalphobia/logrus_sentry v0.8.2
 ## explicit
 github.com/evalphobia/logrus_sentry
+# github.com/fatih/structs v1.1.0
+## explicit
+github.com/fatih/structs
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
 # github.com/getsentry/raven-go v0.2.0

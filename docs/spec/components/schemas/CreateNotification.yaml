@@ -31,8 +31,14 @@ allOf:
           topic:
             type: string
           priority:
-            type: int
+            type: int32
             default: 3
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
           channel:
             type: string
           message:
