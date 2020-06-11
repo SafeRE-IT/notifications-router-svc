@@ -19,6 +19,8 @@ type NotificationsQ interface {
 
 	Insert(data Notification) (Notification, error)
 	InsertDeliveries(data []Delivery) ([]Delivery, error)
+
+	FilterByID(id ...int64) NotificationsQ
 }
 
 type NotificationPriority int32

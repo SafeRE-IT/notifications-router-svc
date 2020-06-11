@@ -93,3 +93,8 @@ func (q *notificationsQ) InsertDeliveries(deliveries []data.Delivery) ([]data.De
 
 	return result, err
 }
+
+func (q *notificationsQ) FilterByID(ids ...int64) data.NotificationsQ {
+	q.sql = q.sql.Where(sq.Eq{"id": ids})
+	return q
+}

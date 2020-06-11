@@ -11,6 +11,8 @@ type DeliveriesQ interface {
 	Select() ([]Delivery, error)
 
 	Transaction(fn func(q DeliveriesQ) error) error
+
+	FilterByNotificationID(ids ...int64) DeliveriesQ
 }
 
 const (

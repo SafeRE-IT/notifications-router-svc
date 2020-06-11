@@ -81,7 +81,6 @@ func CreateNotification(w http.ResponseWriter, r *http.Request) {
 	result := resources.NotificationResponse{
 		Data: newNotificationModel(resultNotification, resultDeliveries),
 	}
-	w.WriteHeader(http.StatusCreated)
 	ape.Render(w, result)
 }
 
@@ -94,7 +93,7 @@ func newNotificationModel(notification data.Notification, deliveries []data.Deli
 			Topic:        notification.Topic,
 			Token:        notification.Token,
 			Channel:      notification.Channel,
-			Priority:     int32(notification.Priority),
+			Priority:     int32(notification.Priority), // TODO: Use enums from resources
 			Message:      resources.Message(notification.Message),
 		},
 		Relationships: resources.NotificationRelationships{

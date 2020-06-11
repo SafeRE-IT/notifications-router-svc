@@ -93,6 +93,7 @@ github.com/oklog/ulid
 # github.com/pelletier/go-toml v1.2.0
 github.com/pelletier/go-toml
 # github.com/pkg/errors v0.8.1
+## explicit
 github.com/pkg/errors
 # github.com/rubenv/sql-migrate v0.0.0-20200429072036-ae26b214fa43
 ## explicit
@@ -149,6 +150,11 @@ gitlab.com/distributed_lab/lorem
 # gitlab.com/distributed_lab/running v0.0.0-20190919133303-df5b181bd496
 ## explicit
 gitlab.com/distributed_lab/running
+# gitlab.com/distributed_lab/urlval v2.1.0+incompatible
+## explicit
+gitlab.com/distributed_lab/urlval
+gitlab.com/distributed_lab/urlval/internal
+gitlab.com/distributed_lab/urlval/internal/betterreflect
 # gitlab.com/tokend/connectors v0.1.1
 ## explicit
 gitlab.com/tokend/connectors/keyer

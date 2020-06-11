@@ -47,3 +47,8 @@ func (q *deliveriesQ) Transaction(fn func(q data.DeliveriesQ) error) error {
 		return fn(q)
 	})
 }
+
+func (q *deliveriesQ) FilterByNotificationID(ids ...int64) data.DeliveriesQ {
+	q.sql = q.sql.Where(sq.Eq{"notification_id": ids})
+	return q
+}

@@ -380,6 +380,9 @@ gitlab.com/distributed_lab/lorem v0.2.0 h1:Rc7Ef3eGSpei8EtWcV6fzPW3O/QEF2zgZR4+h
 gitlab.com/distributed_lab/lorem v0.2.0/go.mod h1:wkzrGoB1L/yUBu56SfoJ/vNiPqiHZcg75AnBkWNcjhQ=
 gitlab.com/distributed_lab/running v0.0.0-20190919133303-df5b181bd496 h1:KDT2Zoye+D5yX6KL7VtfKXp93Ry9cXLxFOO73qb5Xqk=
 gitlab.com/distributed_lab/running v0.0.0-20190919133303-df5b181bd496/go.mod h1:4TnADX84dQjQMRHKIMPCVL0L97rD/Jxv0xDbrN6aKzk=
+gitlab.com/distributed_lab/urlval v1.1.0 h1:2xP9goFHHwO5tiAMPtmodZ1VGqIYKxKgrIItUmb6wM8=
+gitlab.com/distributed_lab/urlval v2.1.0+incompatible h1:dRkLnsFUm9ZgXUZzMXtx3MMhTGLAcY+fRigHfsV57L4=
+gitlab.com/distributed_lab/urlval v2.1.0+incompatible/go.mod h1:cKnUlnZCHUuke/l95YLvW5JoGC2yn53HVgF9rt1WiIg=
 gitlab.com/tokend/connectors v0.1.1 h1:S5xItS1dJH7ED+qZ/QhhRsMiXDwolfC5L09tWHuuilg=
 gitlab.com/tokend/connectors v0.1.1/go.mod h1:SlyDvSRLmbw4BYqh4hpPziKvMxKMsugJrPkjKxoGU/g=
 gitlab.com/tokend/go v1.0.0 h1:1YI6WZKxhq/MfiK6VERUJi2K35lIuUHdlPSVh2guHD8=
