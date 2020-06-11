@@ -7,6 +7,9 @@ client:
 keys:
   signer: ...
 
+doorman:
+  skip_sign_check: false
+
 db:
   url: db_url
 

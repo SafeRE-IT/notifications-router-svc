@@ -22,7 +22,7 @@ func (s *service) router() chi.Router {
 			handlers.CtxDeliveriesQ(pg.NewDeliveriesQ(s.cfg.DB())),
 			handlers.CtxHorizon(horizonConnector),
 			handlers.CtxDoorman(doorman.New(
-				false,
+				s.cfg.SkipSignCheck(),
 				horizonConnector),
 			),
 		),
