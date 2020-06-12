@@ -6,6 +6,8 @@ import (
 	"errors"
 	"time"
 
+	"gitlab.com/distributed_lab/kit/pgdb"
+
 	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
 )
 
@@ -20,7 +22,13 @@ type NotificationsQ interface {
 	Insert(data Notification) (Notification, error)
 	InsertDeliveries(data []Delivery) ([]Delivery, error)
 
+	Page(pageParams pgdb.OffsetPageParams) NotificationsQ
+
 	FilterByID(id ...int64) NotificationsQ
+	FilterByToken(tokens ...string) NotificationsQ
+	// TODO: Two separate methods
+	FilterByDestination(destination string, destinationType string) NotificationsQ
+	FilterByTopic(topics ...string) NotificationsQ
 }
 
 type NotificationPriority int32
@@ -31,6 +39,10 @@ const (
 	NotificationsPriorityMedium
 	NotificationsPriorityHigh
 	NotificationsPriorityHighest
+)
+
+const (
+	NotificationDestinationAccount = "notification-destination-account"
 )
 
 type Notification struct {

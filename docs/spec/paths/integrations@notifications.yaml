@@ -37,6 +37,11 @@ get:
     - $ref: '#/components/parameters/pageLimitParam'
     - $ref: '#/components/parameters/sortingParam'
     - in: query
+      name: 'filter[topic]'
+      required: false
+      schema:
+        type: string
+    - in: query
       name: 'filter[token]'
       required: false
       schema:

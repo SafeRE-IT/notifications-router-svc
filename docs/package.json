@@ -1,5 +1,5 @@
 {
-  "name": "marketplace-svc",
+  "name": "notifications-router-svc",
   "version": "1.0.0",
   "dependencies": {
     "@tokend/redoc-cli": "^0.8.1",

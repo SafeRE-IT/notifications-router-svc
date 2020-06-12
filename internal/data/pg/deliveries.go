@@ -52,3 +52,13 @@ func (q *deliveriesQ) FilterByNotificationID(ids ...int64) data.DeliveriesQ {
 	q.sql = q.sql.Where(sq.Eq{"notification_id": ids})
 	return q
 }
+
+func (q *deliveriesQ) FilterByDestination(destinations ...string) data.DeliveriesQ {
+	q.sql = q.sql.Where(sq.Eq{"destination": destinations})
+	return q
+}
+
+func (q *deliveriesQ) FilterByDestinationType(destinationTypes ...string) data.DeliveriesQ {
+	q.sql = q.sql.Where(sq.Eq{"destination_type": destinationTypes})
+	return q
+}

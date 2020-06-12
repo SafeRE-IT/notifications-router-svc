@@ -31,6 +31,7 @@ func (s *service) router() chi.Router {
 	r.Route("/integrations/notifications", func(r chi.Router) {
 		r.Post("/", handlers.CreateNotification)
 		r.Get("/{id}", handlers.GetNotification)
+		r.Get("/", handlers.GetNotificationsList)
 	})
 
 	return r

@@ -19,6 +19,7 @@ func GetNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: Is allowed for destination
 	if !isAllowed(r, w) {
 		return
 	}

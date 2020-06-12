@@ -2,6 +2,7 @@ package pg
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -17,7 +18,7 @@ const notificationsTableName = "notifications"
 func NewNotificationsQ(db *pgdb.DB) data.NotificationsQ {
 	return &notificationsQ{
 		db:  db.Clone(),
-		sql: sq.Select("*").From(notificationsTableName),
+		sql: sq.Select("n.*").From(fmt.Sprintf("%s as n", notificationsTableName)),
 	}
 }
 
@@ -94,7 +95,29 @@ func (q *notificationsQ) InsertDeliveries(deliveries []data.Delivery) ([]data.De
 	return result, err
 }
 
+func (q *notificationsQ) Page(pageParams pgdb.OffsetPageParams) data.NotificationsQ {
+	q.sql = pageParams.ApplyTo(q.sql, "id")
+	return q
+}
+
 func (q *notificationsQ) FilterByID(ids ...int64) data.NotificationsQ {
-	q.sql = q.sql.Where(sq.Eq{"id": ids})
+	q.sql = q.sql.Where(sq.Eq{"n.id": ids})
+	return q
+}
+
+func (q *notificationsQ) FilterByToken(tokens ...string) data.NotificationsQ {
+	q.sql = q.sql.Where(sq.Eq{"n.token": tokens})
+	return q
+}
+
+func (q *notificationsQ) FilterByDestination(destination string, destinationType string) data.NotificationsQ {
+	q.sql = q.sql.Join(fmt.Sprintf("%s as delivery on delivery.notification_id = n.id", deliveriesTableName)).
+		Where(sq.Eq{"delivery.destination": destination}).
+		Where(sq.Eq{"delivery.destination_type": destinationType})
+	return q
+}
+
+func (q *notificationsQ) FilterByTopic(topics ...string) data.NotificationsQ {
+	q.sql = q.sql.Where(sq.Eq{"n.topic": topics})
 	return q
 }

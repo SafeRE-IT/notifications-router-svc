@@ -1,9 +1,9 @@
 
-apiTitle: marketplace-svc
+apiTitle: Notifications router
 splitSpec: true
 codeSamples: false
 swaggerUI: true
 travis: true
-repo: tokend/marketplace-svc
+repo: tokend/notifications/notifications-router-svc
 oasVersion: 1.0.0
 

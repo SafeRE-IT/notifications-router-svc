@@ -13,6 +13,8 @@ type DeliveriesQ interface {
 	Transaction(fn func(q DeliveriesQ) error) error
 
 	FilterByNotificationID(ids ...int64) DeliveriesQ
+	FilterByDestination(destinations ...string) DeliveriesQ
+	FilterByDestinationType(destinationTypes ...string) DeliveriesQ
 }
 
 const (
