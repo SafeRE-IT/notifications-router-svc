@@ -1,0 +1,28 @@
+parameters:
+  - name: id
+    in: path
+    required: true
+    schema:
+      type: int
+
+patch:
+  tags:
+    - Notifications
+  summary: Cancel notification
+  operationId: cancelNotification
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                $ref: '#/components/schemas/Notification'
+              included:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Delivery'
+

@@ -12,14 +12,16 @@ const deliveriesTableName = "deliveries"
 
 func NewDeliveriesQ(db *pgdb.DB) data.DeliveriesQ {
 	return &deliveriesQ{
-		db:  db.Clone(),
-		sql: sq.Select("*").From(deliveriesTableName),
+		db:        db.Clone(),
+		sql:       sq.Select("*").From(deliveriesTableName),
+		sqlUpdate: sq.Update(deliveriesTableName).Suffix("returning *"),
 	}
 }
 
 type deliveriesQ struct {
-	db  *pgdb.DB
-	sql sq.SelectBuilder
+	db        *pgdb.DB
+	sql       sq.SelectBuilder
+	sqlUpdate sq.UpdateBuilder
 }
 
 func (q *deliveriesQ) New() data.DeliveriesQ {
@@ -42,6 +44,13 @@ func (q *deliveriesQ) Select() ([]data.Delivery, error) {
 	return result, err
 }
 
+func (q *deliveriesQ) Update() ([]data.Delivery, error) {
+	var result []data.Delivery
+	err := q.db.Select(&result, q.sqlUpdate)
+
+	return result, err
+}
+
 func (q *deliveriesQ) Transaction(fn func(q data.DeliveriesQ) error) error {
 	return q.db.Transaction(func() error {
 		return fn(q)
@@ -49,16 +58,27 @@ func (q *deliveriesQ) Transaction(fn func(q data.DeliveriesQ) error) error {
 }
 
 func (q *deliveriesQ) FilterByNotificationID(ids ...int64) data.DeliveriesQ {
-	q.sql = q.sql.Where(sq.Eq{"notification_id": ids})
+	stmt := sq.Eq{"notification_id": ids}
+	q.sql = q.sql.Where(stmt)
+	q.sqlUpdate = q.sqlUpdate.Where(stmt)
 	return q
 }
 
 func (q *deliveriesQ) FilterByDestination(destinations ...string) data.DeliveriesQ {
-	q.sql = q.sql.Where(sq.Eq{"destination": destinations})
+	stmt := sq.Eq{"destination": destinations}
+	q.sql = q.sql.Where(stmt)
+	q.sqlUpdate = q.sqlUpdate.Where(stmt)
 	return q
 }
 
 func (q *deliveriesQ) FilterByDestinationType(destinationTypes ...string) data.DeliveriesQ {
-	q.sql = q.sql.Where(sq.Eq{"destination_type": destinationTypes})
+	stmt := sq.Eq{"destination_type": destinationTypes}
+	q.sql = q.sql.Where(stmt)
+	q.sqlUpdate = q.sqlUpdate.Where(stmt)
+	return q
+}
+
+func (q *deliveriesQ) SetStatus(status data.DeliveryStatus) data.DeliveriesQ {
+	q.sqlUpdate = q.sqlUpdate.Set("status", status)
 	return q
 }

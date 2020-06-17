@@ -9,18 +9,22 @@ type DeliveriesQ interface {
 
 	Get() (*Delivery, error)
 	Select() ([]Delivery, error)
+	Update() ([]Delivery, error)
 
 	Transaction(fn func(q DeliveriesQ) error) error
 
 	FilterByNotificationID(ids ...int64) DeliveriesQ
 	FilterByDestination(destinations ...string) DeliveriesQ
 	FilterByDestinationType(destinationTypes ...string) DeliveriesQ
+
+	SetStatus(status DeliveryStatus) DeliveriesQ
 }
 
 const (
-	DeliveryStatusNotSent DeliveryStatus = "not_sent"
-	DeliveryStatusFailed  DeliveryStatus = "failed"
-	DeliveryStatusSent    DeliveryStatus = "sent"
+	DeliveryStatusNotSent  DeliveryStatus = "not_sent"
+	DeliveryStatusFailed   DeliveryStatus = "failed"
+	DeliveryStatusSent     DeliveryStatus = "sent"
+	DeliveryStatusCanceled DeliveryStatus = "canceled"
 )
 
 type Delivery struct {

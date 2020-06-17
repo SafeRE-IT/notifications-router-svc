@@ -21,6 +21,7 @@ allOf:
               - not_sent
               - failed
               - sent
+              - canceled
           sent_at:
             type: string
             format: time.Time
