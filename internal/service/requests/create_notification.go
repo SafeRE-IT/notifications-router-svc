@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -38,9 +40,12 @@ func (r *CreateNotificationRequest) validate() error {
 		"/data/attributes/token": validation.Validate(&r.Data.Attributes.Token, validation.Length(3, 255)),
 		"/data/attributes/scheduled_for": validation.Validate(&r.Data.Attributes.ScheduledFor,
 			validation.Min(time.Now().UTC()).Error("should be UTC time in future")),
-		"/data/attributes/priority": nil, // TODO: Check that it is a valid priority
-		"/data/attributes/channel":  nil, // TODO: Check that it is a valid delivery type
-		"/data/attributes/message":  validation.Validate(&r.Data.Attributes.Message, validation.Required),
+		"/data/attributes/priority": validation.Validate(&r.Data.Attributes.Priority,
+			validation.Min(data.NotificationsPriorityLowest),
+			validation.Max(data.NotificationsPriorityHighest),
+		),
+		"/data/attributes/channel": nil, // TODO: Check that it is a valid delivery type
+		"/data/attributes/message": validation.Validate(&r.Data.Attributes.Message, validation.Required),
 		// TODO: Check that it is in supported message types
 		"/data/attributes/message/type":       validation.Validate(&r.Data.Attributes.Message.Type, validation.Required),
 		"/data/attributes/message/attributes": validation.Validate(&r.Data.Attributes.Message.Attributes, validation.Required),
