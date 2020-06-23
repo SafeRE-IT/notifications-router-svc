@@ -2,6 +2,8 @@ package pg
 
 import (
 	"database/sql"
+	"fmt"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"gitlab.com/distributed_lab/kit/pgdb"
@@ -13,7 +15,7 @@ const deliveriesTableName = "deliveries"
 func NewDeliveriesQ(db *pgdb.DB) data.DeliveriesQ {
 	return &deliveriesQ{
 		db:        db.Clone(),
-		sql:       sq.Select("*").From(deliveriesTableName),
+		sql:       sq.Select("deliveries.*").From(deliveriesTableName),
 		sqlUpdate: sq.Update(deliveriesTableName).Suffix("returning *"),
 	}
 }
@@ -58,23 +60,58 @@ func (q *deliveriesQ) Transaction(fn func(q data.DeliveriesQ) error) error {
 }
 
 func (q *deliveriesQ) FilterByNotificationID(ids ...int64) data.DeliveriesQ {
-	stmt := sq.Eq{"notification_id": ids}
+	stmt := sq.Eq{"deliveries.notification_id": ids}
 	q.sql = q.sql.Where(stmt)
 	q.sqlUpdate = q.sqlUpdate.Where(stmt)
 	return q
 }
 
 func (q *deliveriesQ) FilterByDestination(destinations ...string) data.DeliveriesQ {
-	stmt := sq.Eq{"destination": destinations}
+	stmt := sq.Eq{"deliveries.destination": destinations}
 	q.sql = q.sql.Where(stmt)
 	q.sqlUpdate = q.sqlUpdate.Where(stmt)
 	return q
 }
 
 func (q *deliveriesQ) FilterByDestinationType(destinationTypes ...string) data.DeliveriesQ {
-	stmt := sq.Eq{"destination_type": destinationTypes}
+	stmt := sq.Eq{"deliveries.destination_type": destinationTypes}
 	q.sql = q.sql.Where(stmt)
 	q.sqlUpdate = q.sqlUpdate.Where(stmt)
+	return q
+}
+
+func (q *deliveriesQ) FilterByStatus(statuses ...data.DeliveryStatus) data.DeliveriesQ {
+	stmt := sq.Eq{"deliveries.status": statuses}
+	q.sql = q.sql.Where(stmt)
+	q.sqlUpdate = q.sqlUpdate.Where(stmt)
+	return q
+}
+
+func (q *deliveriesQ) FilterByScheduledForAfter(time time.Time) data.DeliveriesQ {
+	stmt := sq.GtOrEq{"notification.scheduled_for": time}
+	q.sql = q.sql.Where(stmt)
+	// TODO: Will not work for update
+	q.sqlUpdate = q.sqlUpdate.Where(stmt)
+	return q
+}
+
+func (q *deliveriesQ) FilterById(ids ...int64) data.DeliveriesQ {
+	stmt := sq.Eq{"deliveries.id": ids}
+	q.sql = q.sql.Where(stmt)
+	q.sqlUpdate = q.sqlUpdate.Where(stmt)
+	return q
+}
+
+func (q *deliveriesQ) OrderByPriority(order string) data.DeliveriesQ {
+	q.sql = q.sql.OrderBy(fmt.Sprintf("notification.priority %s", order))
+	return q
+}
+
+// TODO: Find better way to join notification in different filters
+func (q *deliveriesQ) JoinNotification() data.DeliveriesQ {
+	stmt := fmt.Sprintf("%s as notification on notification.id = deliveries.id",
+		notificationsTableName)
+	q.sql = q.sql.Join(stmt)
 	return q
 }
 

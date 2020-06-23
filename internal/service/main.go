@@ -1,8 +1,11 @@
 package service
 
 import (
+	"context"
 	"net"
 	"net/http"
+
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/processor"
 
 	"gitlab.com/distributed_lab/kit/copus/types"
 	"gitlab.com/distributed_lab/logan/v3"
@@ -23,6 +26,8 @@ func (s *service) run() error {
 	if err := s.copus.RegisterChi(r); err != nil {
 		return errors.Wrap(err, "cop failed")
 	}
+
+	go processor.NewProcessor(s.cfg).Run(context.Background())
 
 	return http.Serve(s.listener, r)
 }

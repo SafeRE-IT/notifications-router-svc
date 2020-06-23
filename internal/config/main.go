@@ -16,6 +16,7 @@ type Config interface {
 	comfig.Listenerer
 	signed.Clienter
 	Doorman
+	Notificator
 }
 
 type config struct {
@@ -27,16 +28,18 @@ type config struct {
 	comfig.Listenerer
 	signed.Clienter
 	Doorman
+	Notificator
 }
 
 func New(getter kv.Getter) Config {
 	return &config{
-		getter:     getter,
-		Databaser:  pgdb.NewDatabaser(getter),
-		Copuser:    copus.NewCopuser(getter),
-		Listenerer: comfig.NewListenerer(getter),
-		Logger:     comfig.NewLogger(getter, comfig.LoggerOpts{}),
-		Clienter:   signed.NewClienter(getter),
-		Doorman:    NewDoorman(getter),
+		getter:      getter,
+		Databaser:   pgdb.NewDatabaser(getter),
+		Copuser:     copus.NewCopuser(getter),
+		Listenerer:  comfig.NewListenerer(getter),
+		Logger:      comfig.NewLogger(getter, comfig.LoggerOpts{}),
+		Clienter:    signed.NewClienter(getter),
+		Doorman:     NewDoorman(getter),
+		Notificator: NewNotificator(getter),
 	}
 }

@@ -30,8 +30,9 @@ func NewCreateNotificationRequest(r *http.Request) (CreateNotificationRequest, e
 
 func (r *CreateNotificationRequest) validate() error {
 	return validation.Errors{
-		"/data/":               validation.Validate(&r.Data, validation.Required),
-		"/data/attributes/":    validation.Validate(&r.Data.Attributes, validation.Required),
+		"/data/":            validation.Validate(&r.Data, validation.Required),
+		"/data/attributes/": validation.Validate(&r.Data.Attributes, validation.Required),
+		// TODO: Validate destinations
 		"/data/relationships/": validation.Validate(&r.Data.Relationships, validation.Required),
 		"/data/relationships/destinations/data": validation.Validate(&r.Data.Relationships.Destinations.Data,
 			validation.Required, validation.Length(1, 100)),
@@ -45,6 +46,7 @@ func (r *CreateNotificationRequest) validate() error {
 			validation.Max(data.NotificationsPriorityHighest),
 		),
 		"/data/attributes/channel": nil, // TODO: Check that it is a valid delivery type
+		// TODO: Validate message
 		"/data/attributes/message": validation.Validate(&r.Data.Attributes.Message, validation.Required),
 		// TODO: Check that it is in supported message types
 		"/data/attributes/message/type":       validation.Validate(&r.Data.Attributes.Message.Type, validation.Required),

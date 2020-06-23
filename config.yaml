@@ -10,6 +10,9 @@ keys:
 doorman:
   skip_sign_check: false
 
+notificator:
+  default_channel: email
+
 db:
   url: db_url
 

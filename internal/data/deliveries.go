@@ -16,6 +16,13 @@ type DeliveriesQ interface {
 	FilterByNotificationID(ids ...int64) DeliveriesQ
 	FilterByDestination(destinations ...string) DeliveriesQ
 	FilterByDestinationType(destinationTypes ...string) DeliveriesQ
+	FilterByStatus(statuses ...DeliveryStatus) DeliveriesQ
+	FilterByScheduledForAfter(time time.Time) DeliveriesQ
+	FilterById(ids ...int64) DeliveriesQ
+
+	OrderByPriority(order string) DeliveriesQ
+
+	JoinNotification() DeliveriesQ
 
 	SetStatus(status DeliveryStatus) DeliveriesQ
 }

@@ -45,6 +45,10 @@ const (
 	NotificationDestinationAccount = "notification-destination-account"
 )
 
+const (
+	NotificationMessageTemplate = "notification-message-template"
+)
+
 type Notification struct {
 	ID           int64                `db:"id" structs:"-"`
 	CreatedAt    time.Time            `db:"created_at" structs:"created_at"`
