@@ -63,6 +63,7 @@ github.com/hashicorp/hcl/json/token
 ## explicit
 github.com/jmoiron/sqlx
 github.com/jmoiron/sqlx/reflectx
+github.com/jmoiron/sqlx/types
 # github.com/karrick/godirwalk v1.15.3
 github.com/karrick/godirwalk
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2

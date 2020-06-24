@@ -9,6 +9,7 @@ import (
 
 type NotificatorConfig struct {
 	DefaultChannel string `fig:"default_channel,required"`
+	DefaultLocale  string `fig:"default_locale"`
 }
 
 type Notificator interface {
@@ -30,7 +31,9 @@ func (c *notificator) NotificatorConfig() *NotificatorConfig {
 	return c.once.Do(func() interface{} {
 		raw := kv.MustGetStringMap(c.getter, "notificator")
 
-		config := NotificatorConfig{}
+		config := NotificatorConfig{
+			DefaultLocale: "en",
+		}
 		err := figure.Out(&config).From(raw).Please()
 		if err != nil {
 			panic(errors.Wrap(err, "failed to figure out"))

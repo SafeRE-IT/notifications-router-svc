@@ -1,10 +1,16 @@
 package processor
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"time"
+
+	"github.com/jmoiron/sqlx/types"
+
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/horizon"
 
 	"gitlab.com/distributed_lab/logan/v3/errors"
 
@@ -36,6 +42,7 @@ func NewProcessor(config config.Config, services map[string]string) Processor {
 		deliveriesQ:    pg.NewDeliveriesQ(config.DB()),
 		notificatorCfg: config.NotificatorConfig(),
 		services:       services,
+		horizon:        horizon.NewConnector(config.Client()),
 	}
 }
 
@@ -45,6 +52,7 @@ type processor struct {
 	deliveriesQ    data.DeliveriesQ
 	notificatorCfg *config.NotificatorConfig
 	services       map[string]string
+	horizon        *horizon.Connector
 }
 
 func (p *processor) Run(ctx context.Context) {
@@ -100,12 +108,12 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 
 	// TODO: Check user settings if notification is disabled
 
-	channel, err := p.GetChannel(delivery, *notification)
+	// TODO: Add error handling
+	channel, _ := p.GetChannel(delivery, *notification)
 
+	var message json.RawMessage
 	if notification.Message.Type == data.NotificationMessageTemplate {
-		// TODO: Get locale: 1. Notification model 2. User settings 3. Default for service
-
-		// TODO: Get template
+		message, _ = p.GetMessage(delivery, *notification, channel)
 	}
 
 	// TODO: Get identifier
@@ -115,6 +123,7 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 	p.log.Info(string(rawNotification))
 	p.log.Info(channel)
 	p.log.Info(p.services[channel])
+	p.log.Info(string(message))
 
 	if err = p.SetDeliveryStatus(delivery.ID, data.DeliveryStatusSent); err != nil {
 		return errors.Wrap(err, "failed to mark delivery sent")
@@ -131,6 +140,58 @@ func (p *processor) GetChannel(delivery data.Delivery, notification data.Notific
 	// TODO: Get from user settings
 
 	return p.notificatorCfg.DefaultChannel, nil
+}
+
+func (p *processor) GetLocale(delivery data.Delivery, notification data.Notification) (string, error) {
+	return p.notificatorCfg.DefaultLocale, nil
+}
+
+type MesAttributes struct {
+	payload types.JSONText `json:"payload"`
+	locale  string         `json:"locale"`
+}
+
+func (p *processor) GetMessage(delivery data.Delivery, notification data.Notification, channel string) (json.RawMessage, error) {
+	if notification.Message.Type != data.NotificationMessageTemplate {
+		result, _ := json.Marshal(notification.Message)
+		return result, nil
+	}
+
+	// TODO: Get locale: 1. Notification model 2. User settings 3. Default for service
+	// TODO: Add error handling
+	locale, _ := p.GetLocale(delivery, notification)
+
+	result, err := p.horizon.GetTemplate(notification.Topic, channel, locale)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to download template")
+	}
+
+	mes, err := interpolate(string(result), []byte{})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to interpolate message")
+	}
+
+	return mes, nil
+}
+
+func interpolate(tmpl string, payload types.JSONText) ([]byte, error) {
+	t := template.New("tmpl")
+	t, err := t.Parse(tmpl)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse template")
+	}
+
+	p := make(map[string]string)
+	if err = json.Unmarshal(payload, &p); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal payload")
+	}
+
+	var res bytes.Buffer
+	if err = t.Execute(&res, p); err != nil {
+		return nil, errors.Wrap(err, "failed to execute template")
+	}
+
+	return res.Bytes(), nil
 }
 
 func (p *processor) SetDeliveryStatus(id int64, status data.DeliveryStatus) error {
