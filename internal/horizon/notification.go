@@ -18,7 +18,7 @@ type Message struct {
 
 type MessageAttributes struct {
 	Owner string `json:"owner"`
-	Title string `json:"subject"`
+	Title string `json:"title"`
 	Body  string `json:"body"`
 }
 

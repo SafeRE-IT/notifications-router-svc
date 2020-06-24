@@ -173,7 +173,6 @@ func (p *processor) GetMessage(delivery data.Delivery, notification data.Notific
 	if err != nil {
 		return mes, errors.Wrap(err, "failed to unmarshal payload")
 	}
-	println(string(notification.Message.Attributes))
 
 	mes.Body, err = interpolate(mes.Body, mesAttributes.Payload)
 	if err != nil {
