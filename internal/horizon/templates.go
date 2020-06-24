@@ -15,7 +15,7 @@ func (c *Connector) GetTemplate(topic, channel, locale string) ([]byte, error) {
 	}
 
 	var result json.RawMessage
-	c.connector.Get(path, result)
+	c.connector.Get(path, &result)
 	if err != nil {
 		return nil, errors.Wrap(err, "request failed")
 	}

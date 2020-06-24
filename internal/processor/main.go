@@ -6,7 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"net/http"
+	"net/url"
 	"time"
+
+	"gitlab.com/tokend/connectors/signed"
 
 	"github.com/jmoiron/sqlx/types"
 
@@ -110,20 +114,11 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 
 	// TODO: Add error handling
 	channel, _ := p.GetChannel(delivery, *notification)
-
-	var message json.RawMessage
-	if notification.Message.Type == data.NotificationMessageTemplate {
-		message, _ = p.GetMessage(delivery, *notification, channel)
-	}
+	message, _ := p.GetMessage(delivery, *notification, channel)
 
 	// TODO: Get identifier
 
-	// TODO: Send notification
-	rawNotification, _ := json.Marshal(notification)
-	p.log.Info(string(rawNotification))
-	p.log.Info(channel)
-	p.log.Info(p.services[channel])
-	p.log.Info(string(message))
+	p.sendNotification(message, delivery.Destination, channel)
 
 	if err = p.SetDeliveryStatus(delivery.ID, data.DeliveryStatusSent); err != nil {
 		return errors.Wrap(err, "failed to mark delivery sent")
@@ -147,14 +142,15 @@ func (p *processor) GetLocale(delivery data.Delivery, notification data.Notifica
 }
 
 type MesAttributes struct {
-	payload types.JSONText `json:"payload"`
-	locale  string         `json:"locale"`
+	Payload types.JSONText `json:"payload"`
+	Locale  string         `json:"locale"`
 }
 
-func (p *processor) GetMessage(delivery data.Delivery, notification data.Notification, channel string) (json.RawMessage, error) {
+func (p *processor) GetMessage(delivery data.Delivery, notification data.Notification, channel string) (mes, error) {
+	//TODO: Add notification message
 	if notification.Message.Type != data.NotificationMessageTemplate {
-		result, _ := json.Marshal(notification.Message)
-		return result, nil
+		//result, _ := json.Marshal(notification.Message)
+		return mes{}, nil
 	}
 
 	// TODO: Get locale: 1. Notification model 2. User settings 3. Default for service
@@ -163,35 +159,73 @@ func (p *processor) GetMessage(delivery data.Delivery, notification data.Notific
 
 	result, err := p.horizon.GetTemplate(notification.Topic, channel, locale)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to download template")
+		return mes{}, errors.Wrap(err, "failed to download template")
 	}
 
-	mes, err := interpolate(string(result), []byte{})
+	var mes mes
+	err = json.Unmarshal(result, &mes)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to interpolate message")
+		return mes, errors.Wrap(err, "failed to unmarshal template")
+	}
+
+	var mesAttributes MesAttributes
+	err = json.Unmarshal(notification.Message.Attributes, &mesAttributes)
+	if err != nil {
+		return mes, errors.Wrap(err, "failed to unmarshal payload")
+	}
+	println(string(notification.Message.Attributes))
+
+	mes.Body, err = interpolate(mes.Body, mesAttributes.Payload)
+	if err != nil {
+		return mes, errors.Wrap(err, "failed to interpolate message")
+	}
+
+	mes.Title, err = interpolate(mes.Title, mesAttributes.Payload)
+	if err != nil {
+		return mes, errors.Wrap(err, "failed to interpolate message")
 	}
 
 	return mes, nil
 }
 
-func interpolate(tmpl string, payload types.JSONText) ([]byte, error) {
+type mes struct {
+	Body  string
+	Title string
+}
+
+func interpolate(tmpl string, payload types.JSONText) (string, error) {
 	t := template.New("tmpl")
 	t, err := t.Parse(tmpl)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse template")
+		return "", errors.Wrap(err, "failed to parse template")
 	}
 
 	p := make(map[string]string)
 	if err = json.Unmarshal(payload, &p); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal payload")
+		return "", errors.Wrap(err, "failed to unmarshal payload")
 	}
 
 	var res bytes.Buffer
 	if err = t.Execute(&res, p); err != nil {
-		return nil, errors.Wrap(err, "failed to execute template")
+		return "", errors.Wrap(err, "failed to execute template")
 	}
 
-	return res.Bytes(), nil
+	return res.String(), nil
+}
+
+func (p *processor) sendNotification(m mes, destination string, channel string) {
+	endpoint, _ := url.Parse(p.services[channel])
+	connector := horizon.NewConnector(signed.NewClient(http.DefaultClient, endpoint))
+
+	connector.SendMessage(horizon.MessageRequest{
+		Data: horizon.Message{
+			Attributes: horizon.MessageAttributes{
+				Owner: destination,
+				Title: m.Title,
+				Body:  m.Body,
+			},
+		},
+	})
 }
 
 func (p *processor) SetDeliveryStatus(id int64, status data.DeliveryStatus) error {

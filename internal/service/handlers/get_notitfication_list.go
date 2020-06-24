@@ -51,6 +51,7 @@ func GetNotificationsList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: Add links
 	response := resources.NotificationListResponse{
 		Data: newNotificationsList(notifications, deliveries),
 	}
