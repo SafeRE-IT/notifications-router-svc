@@ -20,6 +20,7 @@ const (
 	deliveriesQCtxKey
 	horizonCtxKey
 	doormanCtxKey
+	servicesCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -71,4 +72,14 @@ func CtxDoorman(d doorman.Doorman) func(context.Context) context.Context {
 func Doorman(r *http.Request, constraints ...doorman.SignerConstraint) error {
 	d := r.Context().Value(doormanCtxKey).(doorman.Doorman)
 	return d.Check(r, constraints...)
+}
+
+func CtxServices(v map[string]string) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, servicesCtxKey, v)
+	}
+}
+
+func Services(r *http.Request) map[string]string {
+	return r.Context().Value(servicesCtxKey).(map[string]string)
 }

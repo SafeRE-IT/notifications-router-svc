@@ -29,11 +29,13 @@ const (
 	serviceName = "notifications-processor"
 )
 
-func NewProcessor(config config.Config) Processor {
+func NewProcessor(config config.Config, services map[string]string) Processor {
 	return &processor{
 		log:            config.Log().WithField("runner", serviceName),
 		notificationsQ: pg.NewNotificationsQ(config.DB()),
 		deliveriesQ:    pg.NewDeliveriesQ(config.DB()),
+		notificatorCfg: config.NotificatorConfig(),
+		services:       services,
 	}
 }
 
@@ -42,6 +44,7 @@ type processor struct {
 	notificationsQ data.NotificationsQ
 	deliveriesQ    data.DeliveriesQ
 	notificatorCfg *config.NotificatorConfig
+	services       map[string]string
 }
 
 func (p *processor) Run(ctx context.Context) {
@@ -111,6 +114,7 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 	rawNotification, _ := json.Marshal(notification)
 	p.log.Info(string(rawNotification))
 	p.log.Info(channel)
+	p.log.Info(p.services[channel])
 
 	if err = p.SetDeliveryStatus(delivery.ID, data.DeliveryStatusSent); err != nil {
 		return errors.Wrap(err, "failed to mark delivery sent")

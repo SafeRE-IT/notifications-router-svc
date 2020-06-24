@@ -18,6 +18,7 @@ type service struct {
 	copus    types.Copus
 	listener net.Listener
 	cfg      config.Config
+	services map[string]string
 }
 
 func (s *service) run() error {
@@ -27,7 +28,7 @@ func (s *service) run() error {
 		return errors.Wrap(err, "cop failed")
 	}
 
-	go processor.NewProcessor(s.cfg).Run(context.Background())
+	go processor.NewProcessor(s.cfg, s.services).Run(context.Background())
 
 	return http.Serve(s.listener, r)
 }
@@ -38,6 +39,7 @@ func newService(cfg config.Config) *service {
 		copus:    cfg.Copus(),
 		listener: cfg.Listener(),
 		cfg:      cfg,
+		services: make(map[string]string),
 	}
 }
 

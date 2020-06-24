@@ -25,6 +25,7 @@ func (s *service) router() chi.Router {
 				s.cfg.SkipSignCheck(),
 				horizonConnector),
 			),
+			handlers.CtxServices(s.services),
 		),
 	)
 
@@ -35,6 +36,7 @@ func (s *service) router() chi.Router {
 			r.Get("/", handlers.GetNotification)
 			r.Patch("/cancel", handlers.CancelNotification)
 		})
+		r.Post("/register", handlers.RegisterService)
 	})
 
 	return r
