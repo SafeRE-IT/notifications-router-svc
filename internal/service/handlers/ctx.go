@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	regources "gitlab.com/tokend/regources/generated"
+
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
 
@@ -21,6 +23,7 @@ const (
 	horizonCtxKey
 	doormanCtxKey
 	servicesCtxKey
+	horizonInfoCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -82,4 +85,14 @@ func CtxServices(v map[string]string) func(context.Context) context.Context {
 
 func Services(r *http.Request) map[string]string {
 	return r.Context().Value(servicesCtxKey).(map[string]string)
+}
+
+func CtxHorizonInfo(v regources.HorizonState) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, horizonInfoCtxKey, v)
+	}
+}
+
+func HorizonInfo(r *http.Request) regources.HorizonState {
+	return r.Context().Value(horizonInfoCtxKey).(regources.HorizonState)
 }

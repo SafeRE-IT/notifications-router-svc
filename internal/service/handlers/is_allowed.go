@@ -19,13 +19,7 @@ func isAllowed(r *http.Request, w http.ResponseWriter, dataOwners ...string) boo
 		constraints = append(constraints, doorman.SignerOf(dataOwner))
 	}
 
-	info, err := Horizon(r).Info()
-	if err != nil {
-		Log(r).WithError(err).Error("failed to get horizon info")
-		ape.RenderErr(w, problems.InternalError())
-		return false
-	}
-	constraints = append(constraints, doorman.SignerOf(info.Attributes.MasterAccountId))
+	constraints = append(constraints, doorman.SignerOf(HorizonInfo(r).Attributes.MasterAccountId))
 
 	switch err := Doorman(r, constraints...); err.(type) {
 	case nil:

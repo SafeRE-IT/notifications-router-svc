@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/go-chi/chi"
 	"gitlab.com/distributed_lab/ape"
+	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data/pg"
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/horizon"
@@ -12,6 +13,10 @@ import (
 func (s *service) router() chi.Router {
 	r := chi.NewRouter()
 	horizonConnector := horizon.NewConnector(s.cfg.Client())
+	info, err := horizonConnector.Info()
+	if err != nil {
+		panic(errors.Wrap(err, "failed to get horizon info"))
+	}
 
 	r.Use(
 		ape.RecoverMiddleware(s.log),
@@ -26,6 +31,7 @@ func (s *service) router() chi.Router {
 				horizonConnector),
 			),
 			handlers.CtxServices(s.services),
+			handlers.CtxHorizonInfo(info),
 		),
 	)
 
