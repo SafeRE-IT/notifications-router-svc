@@ -19,8 +19,11 @@ func GetNotificationsList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Is allowed for destination
-	if !isAllowed(r, w) {
+	owners := make([]string, 0)
+	if request.FilterDestinationAccount != nil {
+		owners = append(owners, *request.FilterDestinationAccount)
+	}
+	if !isAllowed(r, w, owners...) {
 		return
 	}
 
@@ -61,6 +64,7 @@ func GetNotificationsList(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, response)
 }
 
+// TODO: Filter by sent at
 func applyFilters(q data.NotificationsQ, request requests.GetNotificationsListRequest) {
 	q.Page(request.OffsetPageParams)
 

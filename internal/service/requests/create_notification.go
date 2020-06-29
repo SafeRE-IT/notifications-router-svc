@@ -34,6 +34,7 @@ func (r *CreateNotificationRequest) validate() error {
 		"/data/attributes/": validation.Validate(&r.Data.Attributes, validation.Required),
 		// TODO: Validate destinations
 		"/data/relationships/": validation.Validate(&r.Data.Relationships, validation.Required),
+		// TODO: Get limit of destinations from config
 		"/data/relationships/destinations/data": validation.Validate(&r.Data.Relationships.Destinations.Data,
 			validation.Required, validation.Length(1, 100)),
 		"/data/attributes/topic": validation.Validate(&r.Data.Attributes.Topic, validation.Required,
