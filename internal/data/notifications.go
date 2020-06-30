@@ -29,6 +29,8 @@ type NotificationsQ interface {
 	// TODO: Two separate methods
 	FilterByDestination(destination string, destinationType string) NotificationsQ
 	FilterByTopic(topics ...string) NotificationsQ
+	FilterByScheduledAfter(time time.Time) NotificationsQ
+	FilterByScheduledBefore(time time.Time) NotificationsQ
 }
 
 type NotificationPriority int32

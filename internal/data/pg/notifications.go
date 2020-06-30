@@ -121,3 +121,13 @@ func (q *notificationsQ) FilterByTopic(topics ...string) data.NotificationsQ {
 	q.sql = q.sql.Where(sq.Eq{"n.topic": topics})
 	return q
 }
+
+func (q *notificationsQ) FilterByScheduledAfter(time time.Time) data.NotificationsQ {
+	q.sql = q.sql.Where(sq.GtOrEq{"scheduled_for": time})
+	return q
+}
+
+func (q *notificationsQ) FilterByScheduledBefore(time time.Time) data.NotificationsQ {
+	q.sql = q.sql.Where(sq.LtOrEq{"scheduled_for": time})
+	return q
+}

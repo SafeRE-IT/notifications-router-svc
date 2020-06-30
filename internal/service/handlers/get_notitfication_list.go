@@ -64,7 +64,6 @@ func GetNotificationsList(w http.ResponseWriter, r *http.Request) {
 	ape.Render(w, response)
 }
 
-// TODO: Filter by sent at
 func applyFilters(q data.NotificationsQ, request requests.GetNotificationsListRequest) {
 	q.Page(request.OffsetPageParams)
 
@@ -78,6 +77,14 @@ func applyFilters(q data.NotificationsQ, request requests.GetNotificationsListRe
 
 	if request.FilterDestinationAccount != nil {
 		q.FilterByDestination(*request.FilterDestinationAccount, data.NotificationDestinationAccount)
+	}
+
+	if request.FilterScheduledAfter != nil {
+		q.FilterByScheduledAfter(*request.FilterScheduledAfter)
+	}
+
+	if request.FilterScheduledBefore != nil {
+		q.FilterByScheduledBefore(*request.FilterScheduledBefore)
 	}
 }
 
