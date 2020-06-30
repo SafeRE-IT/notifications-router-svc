@@ -54,9 +54,9 @@ func GetNotificationsList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Add links
 	response := resources.NotificationListResponse{
-		Data: newNotificationsList(notifications, deliveries),
+		Data:  newNotificationsList(notifications, deliveries),
+		Links: GetOffsetLinks(r, request.OffsetPageParams),
 	}
 	if request.IncludeDeliveries {
 		response.Included = newNotificationIncluded(deliveries)
