@@ -2,8 +2,11 @@ package requests
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
+
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/types"
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
 
@@ -29,14 +32,7 @@ func NewCreateNotificationRequest(r *http.Request) (CreateNotificationRequest, e
 }
 
 func (r *CreateNotificationRequest) validate() error {
-	return validation.Errors{
-		"/data/":            validation.Validate(&r.Data, validation.Required),
-		"/data/attributes/": validation.Validate(&r.Data.Attributes, validation.Required),
-		// TODO: Validate destinations
-		"/data/relationships/": validation.Validate(&r.Data.Relationships, validation.Required),
-		// TODO: Get limit of destinations from config
-		"/data/relationships/destinations/data": validation.Validate(&r.Data.Relationships.Destinations.Data,
-			validation.Required, validation.Length(1, 100)),
+	return mergeErrors(validation.Errors{
 		"/data/attributes/topic": validation.Validate(&r.Data.Attributes.Topic, validation.Required,
 			validation.Length(3, 100)),
 		"/data/attributes/token": validation.Validate(&r.Data.Attributes.Token, validation.Length(3, 255)),
@@ -47,10 +43,63 @@ func (r *CreateNotificationRequest) validate() error {
 			validation.Max(data.NotificationsPriorityHighest),
 		),
 		"/data/attributes/channel": nil, // TODO: Check that it is a valid delivery type
-		// TODO: Validate message
-		"/data/attributes/message": validation.Validate(&r.Data.Attributes.Message, validation.Required),
-		// TODO: Check that it is in supported message types
-		"/data/attributes/message/type":       validation.Validate(&r.Data.Attributes.Message.Type, validation.Required),
-		"/data/attributes/message/attributes": validation.Validate(&r.Data.Attributes.Message.Attributes, validation.Required),
-	}.Filter()
+	},
+		validateDestinationsList(r.Data.Relationships.Destinations.Data),
+		validateMessage(r.Data.Attributes.Message),
+	).Filter()
+}
+
+func validateMessage(message resources.Message) validation.Errors {
+	validationErrors := validation.Errors{
+		"/data/attributes/message/type": validation.Validate(&message.Type, validation.Required),
+	}
+
+	if message.Type == data.NotificationMessageTemplate {
+		var templateMes data.TemplateMessageAttributes
+		err := json.Unmarshal(message.Attributes, &templateMes)
+		if err != nil {
+			validationErrors["/data/attributes/message/attributes"] = errors.New("must be valid json object")
+			return validationErrors
+		}
+		// TODO: validate payload and locale
+	}
+
+	return validationErrors
+}
+
+func validateDestinationsList(destinations []resources.Key) validation.Errors {
+	// TODO: get max destinations from config
+	validationErrors := validation.Errors{
+		"/data/relationships/destinations/data": validation.Validate(&destinations,
+			validation.Required, validation.Length(1, 100)),
+	}
+
+	// TODO: check for duplicates
+	for i, destination := range destinations {
+		validationErrors[fmt.Sprintf("/data/relationships/destinations/data/%d", i)] =
+			// TODO: Use string instead of type
+			validateDestination(string(destination.Type), destination.ID)
+	}
+
+	return validationErrors
+}
+
+func validateDestination(destinationType string, destination string) error {
+	// TODO: Add validation of other types
+	switch destinationType {
+	case data.NotificationDestinationAccount:
+		return types.AccountID(destination).Validate()
+	default:
+		return nil
+	}
+}
+
+func mergeErrors(validationErrors ...validation.Errors) validation.Errors {
+	result := make(validation.Errors)
+	for _, errs := range validationErrors {
+		for key, err := range errs {
+			result[key] = err
+		}
+	}
+	return result
 }

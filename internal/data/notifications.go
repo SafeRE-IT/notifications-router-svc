@@ -1,14 +1,9 @@
 package data
 
 import (
-	"database/sql/driver"
-	"encoding/json"
-	"errors"
 	"time"
 
 	"gitlab.com/distributed_lab/kit/pgdb"
-
-	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
 )
 
 type NotificationsQ interface {
@@ -47,10 +42,6 @@ const (
 	NotificationDestinationAccount = "notification-destination-account"
 )
 
-const (
-	NotificationMessageTemplate = "notification-message-template"
-)
-
 type Notification struct {
 	ID           int64                `db:"id" structs:"-"`
 	CreatedAt    time.Time            `db:"created_at" structs:"created_at"`
@@ -60,20 +51,4 @@ type Notification struct {
 	Priority     NotificationPriority `db:"priority" structs:"priority"`
 	Channel      *string              `db:"channel" structs:"channel"`
 	Message      Message              `db:"message" structs:"-"`
-}
-
-type Message resources.Message
-
-func (m Message) Value() (driver.Value, error) {
-	j, err := json.Marshal(m)
-	return j, err
-}
-
-func (m *Message) Scan(src interface{}) error {
-	source, ok := src.([]byte)
-	if !ok {
-		return errors.New("Type assertion .([]byte) failed.")
-	}
-
-	return json.Unmarshal(source, m)
 }
