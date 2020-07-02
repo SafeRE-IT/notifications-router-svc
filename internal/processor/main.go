@@ -109,6 +109,7 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 	if notification == nil {
 		return errors.New("failed to find notification for delivery")
 	}
+	p.log.Infof("sending notification %d, notification destination: %d", notification.ID, delivery.Destination)
 
 	// TODO: Check user settings if notification is disabled
 
@@ -213,10 +214,16 @@ func interpolate(tmpl string, payload types.JSONText) (string, error) {
 }
 
 func (p *processor) sendNotification(m mes, destination string, channel string) {
-	endpoint, _ := url.Parse(p.services[channel])
+	if _, ok := p.services[channel]; !ok {
+		p.log.Error("notifiactor for this channel is not registered")
+	}
+	endpoint, err := url.Parse(p.services[channel])
+	if err != nil {
+		p.log.WithError(err).Error("failed to parse notificator domain")
+	}
 	connector := horizon.NewConnector(signed.NewClient(http.DefaultClient, endpoint))
 
-	connector.SendMessage(horizon.MessageRequest{
+	err = connector.SendMessage(horizon.MessageRequest{
 		Data: horizon.Message{
 			Attributes: horizon.MessageAttributes{
 				Owner: destination,
@@ -225,6 +232,9 @@ func (p *processor) sendNotification(m mes, destination string, channel string) 
 			},
 		},
 	})
+	if err != nil {
+		p.log.WithError(err).Error("failed to send notification")
+	}
 }
 
 func (p *processor) SetDeliveryStatus(id int64, status data.DeliveryStatus) error {
