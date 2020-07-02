@@ -17,7 +17,7 @@ type DeliveriesQ interface {
 	FilterByDestination(destinations ...string) DeliveriesQ
 	FilterByDestinationType(destinationTypes ...string) DeliveriesQ
 	FilterByStatus(statuses ...DeliveryStatus) DeliveriesQ
-	FilterByScheduledForAfter(time time.Time) DeliveriesQ
+	FilterByScheduledBefore(time time.Time) DeliveriesQ
 	FilterById(ids ...int64) DeliveriesQ
 
 	OrderByPriority(order string) DeliveriesQ

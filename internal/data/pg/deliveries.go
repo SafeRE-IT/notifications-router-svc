@@ -87,8 +87,8 @@ func (q *deliveriesQ) FilterByStatus(statuses ...data.DeliveryStatus) data.Deliv
 	return q
 }
 
-func (q *deliveriesQ) FilterByScheduledForAfter(time time.Time) data.DeliveriesQ {
-	stmt := sq.GtOrEq{"notification.scheduled_for": time}
+func (q *deliveriesQ) FilterByScheduledBefore(time time.Time) data.DeliveriesQ {
+	stmt := sq.LtOrEq{"notification.scheduled_for": time}
 	q.sql = q.sql.Where(stmt)
 	// TODO: Will not work for update
 	q.sqlUpdate = q.sqlUpdate.Where(stmt)

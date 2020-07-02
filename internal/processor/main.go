@@ -93,7 +93,7 @@ func (p *processor) getPendingDeliveries() ([]data.Delivery, error) {
 	return p.deliveriesQ.New().
 		JoinNotification().
 		FilterByStatus(data.DeliveryStatusNotSent).
-		FilterByScheduledForAfter(time.Now()).
+		FilterByScheduledBefore(time.Now().UTC()).
 		OrderByPriority(pgdb.OrderTypeDesc).
 		Select()
 }
