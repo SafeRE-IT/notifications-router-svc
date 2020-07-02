@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"net/url"
 	"time"
+
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/notificators"
 
 	"gitlab.com/tokend/connectors/signed"
 
@@ -39,24 +40,24 @@ const (
 	serviceName = "notifications-processor"
 )
 
-func NewProcessor(config config.Config, services map[string]string) Processor {
+func NewProcessor(config config.Config, notificatorsStorage notificators.NotificatorsStorage) Processor {
 	return &processor{
-		log:            config.Log().WithField("runner", serviceName),
-		notificationsQ: pg.NewNotificationsQ(config.DB()),
-		deliveriesQ:    pg.NewDeliveriesQ(config.DB()),
-		notificatorCfg: config.NotificatorConfig(),
-		services:       services,
-		horizon:        horizon.NewConnector(config.Client()),
+		log:                 config.Log().WithField("runner", serviceName),
+		notificationsQ:      pg.NewNotificationsQ(config.DB()),
+		deliveriesQ:         pg.NewDeliveriesQ(config.DB()),
+		notificatorCfg:      config.NotificatorConfig(),
+		notificatorsStorage: notificatorsStorage,
+		horizon:             horizon.NewConnector(config.Client()),
 	}
 }
 
 type processor struct {
-	log            *logan.Entry
-	notificationsQ data.NotificationsQ
-	deliveriesQ    data.DeliveriesQ
-	notificatorCfg *config.NotificatorConfig
-	services       map[string]string
-	horizon        *horizon.Connector
+	log                 *logan.Entry
+	notificationsQ      data.NotificationsQ
+	deliveriesQ         data.DeliveriesQ
+	notificatorCfg      *config.NotificatorConfig
+	notificatorsStorage notificators.NotificatorsStorage
+	horizon             *horizon.Connector
 }
 
 func (p *processor) Run(ctx context.Context) {
@@ -76,12 +77,18 @@ func (p *processor) processNotifications(ctx context.Context) error {
 	}
 
 	for _, delivery := range deliveries {
+		p.log.Info("processing notification", map[string]interface{}{
+			"delivery_id":          delivery.ID,
+			"notification_id":      delivery.NotificationID,
+			"delivery_destination": delivery.Destination,
+		})
 		err = p.processDelivery(delivery)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("failed to process delivery"),
 				map[string]interface{}{
-					"delivery_id":     delivery.ID,
-					"notification_id": delivery.NotificationID,
+					"delivery_id":          delivery.ID,
+					"notification_id":      delivery.NotificationID,
+					"delivery_destination": delivery.Destination,
 				})
 		}
 	}
@@ -114,6 +121,7 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 	// TODO: Check user settings if notification is disabled
 
 	// TODO: Add error handling
+	// TODO: Get channel based on available identificator
 	channel, _ := p.GetChannel(delivery, *notification)
 	message, _ := p.GetMessage(delivery, *notification, channel)
 
@@ -214,14 +222,11 @@ func interpolate(tmpl string, payload types.JSONText) (string, error) {
 }
 
 func (p *processor) sendNotification(m mes, destination string, channel string) {
-	if _, ok := p.services[channel]; !ok {
-		p.log.Error("notifiactor for this channel is not registered")
-	}
-	endpoint, err := url.Parse(p.services[channel])
+	notificatorService, err := p.notificatorsStorage.GetByChannel(channel)
 	if err != nil {
-		p.log.WithError(err).Error("failed to parse notificator domain")
+		p.log.WithError(err).Error("failed to get notificator service")
 	}
-	connector := horizon.NewConnector(signed.NewClient(http.DefaultClient, endpoint))
+	connector := horizon.NewConnector(signed.NewClient(http.DefaultClient, &notificatorService.Endpoint))
 
 	err = connector.SendMessage(horizon.MessageRequest{
 		Data: horizon.Message{

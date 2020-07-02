@@ -30,7 +30,7 @@ func (s *service) router() chi.Router {
 				s.cfg.SkipSignCheck(),
 				horizonConnector),
 			),
-			handlers.CtxServices(s.services),
+			handlers.CtxNotificatorsStorage(s.notificatorsStorage),
 			handlers.CtxHorizonInfo(info),
 		),
 	)

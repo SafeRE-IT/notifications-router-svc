@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/notificators"
+
 	regources "gitlab.com/tokend/regources/generated"
 
 	"gitlab.com/tokend/go/doorman"
@@ -22,7 +24,7 @@ const (
 	deliveriesQCtxKey
 	horizonCtxKey
 	doormanCtxKey
-	servicesCtxKey
+	notificatorsStorageCtxKey
 	horizonInfoCtxKey
 )
 
@@ -77,14 +79,14 @@ func Doorman(r *http.Request, constraints ...doorman.SignerConstraint) error {
 	return d.Check(r, constraints...)
 }
 
-func CtxServices(v map[string]string) func(context.Context) context.Context {
+func CtxNotificatorsStorage(v notificators.NotificatorsStorage) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, servicesCtxKey, v)
+		return context.WithValue(ctx, notificatorsStorageCtxKey, v)
 	}
 }
 
-func Services(r *http.Request) map[string]string {
-	return r.Context().Value(servicesCtxKey).(map[string]string)
+func NotificatorsStorage(r *http.Request) notificators.NotificatorsStorage {
+	return r.Context().Value(notificatorsStorageCtxKey).(notificators.NotificatorsStorage)
 }
 
 func CtxHorizonInfo(v regources.HorizonState) func(context.Context) context.Context {

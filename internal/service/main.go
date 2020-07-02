@@ -5,6 +5,8 @@ import (
 	"net"
 	"net/http"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/notificators"
+
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/processor"
 
 	"gitlab.com/distributed_lab/kit/copus/types"
@@ -14,11 +16,11 @@ import (
 )
 
 type service struct {
-	log      *logan.Entry
-	copus    types.Copus
-	listener net.Listener
-	cfg      config.Config
-	services map[string]string
+	log                 *logan.Entry
+	copus               types.Copus
+	listener            net.Listener
+	cfg                 config.Config
+	notificatorsStorage notificators.NotificatorsStorage
 }
 
 func (s *service) run() error {
@@ -28,18 +30,18 @@ func (s *service) run() error {
 		return errors.Wrap(err, "cop failed")
 	}
 
-	go processor.NewProcessor(s.cfg, s.services).Run(context.Background())
+	go processor.NewProcessor(s.cfg, s.notificatorsStorage).Run(context.Background())
 
 	return http.Serve(s.listener, r)
 }
 
 func newService(cfg config.Config) *service {
 	return &service{
-		log:      cfg.Log(),
-		copus:    cfg.Copus(),
-		listener: cfg.Listener(),
-		cfg:      cfg,
-		services: make(map[string]string),
+		log:                 cfg.Log(),
+		copus:               cfg.Copus(),
+		listener:            cfg.Listener(),
+		cfg:                 cfg,
+		notificatorsStorage: notificators.NewMemoryNotificationsStorage(),
 	}
 }
 

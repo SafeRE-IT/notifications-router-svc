@@ -6,6 +6,7 @@ require (
 	github.com/Masterminds/squirrel v1.4.0
 	github.com/alecthomas/jsonschema v0.0.0-20200530073317-71f438968921 // indirect
 	github.com/alecthomas/kingpin v2.2.6+incompatible
+	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
 	github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894 // indirect
 	github.com/evalphobia/logrus_sentry v0.8.2 // indirect
 	github.com/fatih/structs v1.1.0
