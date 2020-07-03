@@ -237,7 +237,7 @@ func interpolate(tmpl string, payload types.JSONText) (string, error) {
 		return "", errors.Wrap(err, "failed to parse template")
 	}
 
-	p := make(map[string]string)
+	p := make(map[string]interface{})
 	if err = json.Unmarshal(payload, &p); err != nil {
 		return "", errors.Wrap(err, "failed to unmarshal payload")
 	}
