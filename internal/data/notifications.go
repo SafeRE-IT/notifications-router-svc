@@ -40,6 +40,8 @@ const (
 
 const (
 	NotificationDestinationAccount = "notification-destination-account"
+	NotificationDestinationEmail   = "notidication-destination-email"
+	NotificationDestinationPhone   = "notification-destination-phone"
 )
 
 type Notification struct {

@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"time"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/identifier"
+
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/notificators"
 
 	"gitlab.com/tokend/connectors/signed"
@@ -41,13 +43,15 @@ const (
 )
 
 func NewProcessor(config config.Config, notificatorsStorage notificators.NotificatorsStorage) Processor {
+	horizonConnector := horizon.NewConnector(config.Client())
 	return &processor{
 		log:                 config.Log().WithField("runner", serviceName),
 		notificationsQ:      pg.NewNotificationsQ(config.DB()),
 		deliveriesQ:         pg.NewDeliveriesQ(config.DB()),
 		notificatorCfg:      config.NotificatorConfig(),
 		notificatorsStorage: notificatorsStorage,
-		horizon:             horizon.NewConnector(config.Client()),
+		horizon:             horizonConnector,
+		identifierProvider:  horizonConnector,
 	}
 }
 
@@ -58,6 +62,7 @@ type processor struct {
 	notificatorCfg      *config.NotificatorConfig
 	notificatorsStorage notificators.NotificatorsStorage
 	horizon             *horizon.Connector
+	identifierProvider  identifier.IdentifierProvider
 }
 
 func (p *processor) Run(ctx context.Context) {
@@ -125,9 +130,12 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 	channel, _ := p.GetChannel(delivery, *notification)
 	message, _ := p.GetMessage(delivery, *notification, channel)
 
-	// TODO: Get identifier
+	id, err := p.GetIdentifier(channel, delivery)
+	if err != nil {
+		return errors.Wrap(err, "failed to get identifier")
+	}
 
-	p.sendNotification(message, delivery.Destination, channel)
+	p.sendNotification(message, id.ID, channel)
 
 	if err = p.SetDeliveryStatus(delivery.ID, data.DeliveryStatusSent); err != nil {
 		return errors.Wrap(err, "failed to mark delivery sent")
@@ -148,6 +156,27 @@ func (p *processor) GetChannel(delivery data.Delivery, notification data.Notific
 
 func (p *processor) GetLocale(delivery data.Delivery, notification data.Notification) (string, error) {
 	return p.notificatorCfg.DefaultLocale, nil
+}
+
+func (p *processor) GetIdentifier(channel string, delivery data.Delivery) (identifier.Identifier, error) {
+	if delivery.DestinationType != data.NotificationDestinationAccount {
+		return identifier.Identifier{
+			ID:   delivery.Destination,
+			Type: delivery.DestinationType,
+		}, nil
+	}
+	id, err := p.identifierProvider.GetIdentifierByChannel(channel, delivery.Destination)
+	if err != nil {
+		return identifier.Identifier{}, err
+	}
+	if id == nil {
+		return identifier.Identifier{
+			ID:   delivery.Destination,
+			Type: delivery.DestinationType,
+		}, nil
+	}
+
+	return *id, nil
 }
 
 type MesAttributes struct {
