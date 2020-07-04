@@ -6,16 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"net/http"
 	"time"
+
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/templates"
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/identifier"
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/notificators"
-
-	"gitlab.com/tokend/connectors/signed"
-
-	"github.com/jmoiron/sqlx/types"
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/horizon"
 
@@ -52,6 +49,7 @@ func NewProcessor(config config.Config, notificatorsStorage notificators.Notific
 		notificatorsStorage: notificatorsStorage,
 		horizon:             horizonConnector,
 		identifierProvider:  horizonConnector,
+		templatesProvider:   templates.NewHorizonTemplatesProvider(config.Client()),
 	}
 }
 
@@ -63,6 +61,7 @@ type processor struct {
 	notificatorsStorage notificators.NotificatorsStorage
 	horizon             *horizon.Connector
 	identifierProvider  identifier.IdentifierProvider
+	templatesProvider   templates.TemplatesProvider
 }
 
 func (p *processor) Run(ctx context.Context) {
@@ -128,14 +127,20 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 	// TODO: Add error handling
 	// TODO: Get channel based on available identificator
 	channel, _ := p.GetChannel(delivery, *notification)
-	message, _ := p.GetMessage(delivery, *notification, channel)
+	message, err := p.GetMessage(delivery, *notification, channel)
+	if err != nil {
+		return errors.Wrap(err, "failed to create message from template")
+	}
 
 	id, err := p.GetIdentifier(channel, delivery)
 	if err != nil {
 		return errors.Wrap(err, "failed to get identifier")
 	}
 
-	p.sendNotification(message, id.ID, channel)
+	println(channel)
+	println(string(mustMarshalJSON(message)))
+	println(string(mustMarshalJSON(id)))
+	//p.sendNotification(message, id.ID, channel)
 
 	if err = p.SetDeliveryStatus(delivery.ID, data.DeliveryStatusSent); err != nil {
 		return errors.Wrap(err, "failed to mark delivery sent")
@@ -179,97 +184,88 @@ func (p *processor) GetIdentifier(channel string, delivery data.Delivery) (ident
 	return *id, nil
 }
 
-type MesAttributes struct {
-	Payload types.JSONText `json:"payload"`
-	Locale  string         `json:"locale"`
-}
-
-func (p *processor) GetMessage(delivery data.Delivery, notification data.Notification, channel string) (mes, error) {
-	//TODO: Add notification message
+func (p *processor) GetMessage(delivery data.Delivery, notification data.Notification, channel string) (data.Message, error) {
 	if notification.Message.Type != data.NotificationMessageTemplate {
-		//result, _ := json.Marshal(notification.Message)
-		return mes{}, nil
+		return notification.Message, nil
+	}
+
+	var templateAttrs data.TemplateMessageAttributes
+	err := json.Unmarshal(notification.Message.Attributes, &templateAttrs)
+	if err != nil {
+		return data.Message{}, errors.Wrap(err, "failed to get template")
 	}
 
 	// TODO: Get locale: 1. Notification model 2. User settings 3. Default for service
-	// TODO: Add error handling
-	locale, _ := p.GetLocale(delivery, notification)
-
-	result, err := p.horizon.GetTemplate(notification.Topic, channel, locale)
+	locale, err := p.GetLocale(delivery, notification)
 	if err != nil {
-		return mes{}, errors.Wrap(err, "failed to download template")
+		return data.Message{}, errors.Wrap(err, "failed to get locale")
 	}
 
-	var mes mes
-	err = json.Unmarshal(result, &mes)
+	rawMes, err := p.templatesProvider.GetTemplate(notification.Topic, channel, locale)
 	if err != nil {
-		return mes, errors.Wrap(err, "failed to unmarshal template")
+		return data.Message{}, errors.Wrap(err, "failed to download template")
+	}
+	if rawMes == nil {
+		return data.Message{}, errors.New("template not found")
 	}
 
-	var mesAttributes MesAttributes
-	err = json.Unmarshal(notification.Message.Attributes, &mesAttributes)
-	if err != nil {
-		return mes, errors.Wrap(err, "failed to unmarshal payload")
+	if templateAttrs.Payload != nil {
+		rawAttrs, err := interpolate(string(rawMes), *templateAttrs.Payload)
+		if err != nil {
+			return data.Message{}, errors.Wrap(err, "failed to interpolate template")
+		}
+		rawMes = rawAttrs
 	}
 
-	mes.Body, err = interpolate(mes.Body, mesAttributes.Payload)
+	var result data.Message
+	err = json.Unmarshal(rawMes, &result)
 	if err != nil {
-		return mes, errors.Wrap(err, "failed to interpolate message")
+		return data.Message{}, errors.Wrap(err, "failed to marshal template to message")
 	}
 
-	mes.Title, err = interpolate(mes.Title, mesAttributes.Payload)
-	if err != nil {
-		return mes, errors.Wrap(err, "failed to interpolate message")
-	}
-
-	return mes, nil
+	return result, nil
 }
 
-type mes struct {
-	Body  string
-	Title string
-}
-
-func interpolate(tmpl string, payload types.JSONText) (string, error) {
+func interpolate(tmpl string, payload []byte) ([]byte, error) {
 	t := template.New("tmpl")
 	t, err := t.Parse(tmpl)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to parse template")
+		return nil, errors.Wrap(err, "failed to parse template")
 	}
 
 	p := make(map[string]interface{})
 	if err = json.Unmarshal(payload, &p); err != nil {
-		return "", errors.Wrap(err, "failed to unmarshal payload")
+		return nil, errors.Wrap(err, "failed to unmarshal payload")
 	}
 
 	var res bytes.Buffer
 	if err = t.Execute(&res, p); err != nil {
-		return "", errors.Wrap(err, "failed to execute template")
+		return nil, errors.Wrap(err, "failed to execute template")
 	}
 
-	return res.String(), nil
+	return res.Bytes(), nil
 }
 
-func (p *processor) sendNotification(m mes, destination string, channel string) {
-	notificatorService, err := p.notificatorsStorage.GetByChannel(channel)
-	if err != nil {
-		p.log.WithError(err).Error("failed to get notificator service")
-	}
-	connector := horizon.NewConnector(signed.NewClient(http.DefaultClient, &notificatorService.Endpoint))
-
-	err = connector.SendMessage(horizon.MessageRequest{
-		Data: horizon.Message{
-			Attributes: horizon.MessageAttributes{
-				Owner: destination,
-				Title: m.Title,
-				Body:  m.Body,
-			},
-		},
-	})
-	if err != nil {
-		p.log.WithError(err).Error("failed to send notification")
-	}
-}
+//func (p *processor) sendNotification(m mes, destination string, channel string) {
+//	notificatorService, err := p.notificatorsStorage.GetByChannel(channel)
+//	if err != nil {
+//		p.log.WithError(err).Error("failed to get notificator service")
+//	}
+//	connector := horizon.NewConnector(signed.NewClient(http.DefaultClient, &notificatorService.Endpoint))
+//
+//	err = connector.SendMessage(horizon.MessageRequest{
+//		Data: horizon.Message{
+//			Attributes: horizon.MessageAttributes{
+//				Owner: destination,
+//				Title: m.Title,
+//				Body:  m.Body,
+//			},
+//		},
+//	})
+//	if err != nil {
+//		p.log.WithError(err).Error("failed to send notification")
+//	}
+//}
 
 func (p *processor) SetDeliveryStatus(id int64, status data.DeliveryStatus) error {
 	_, err := p.deliveriesQ.New().
@@ -277,4 +273,12 @@ func (p *processor) SetDeliveryStatus(id int64, status data.DeliveryStatus) erro
 		SetStatus(status).
 		Update()
 	return err
+}
+
+func mustMarshalJSON(data interface{}) []byte {
+	result, err := json.Marshal(data)
+	if err != nil {
+		panic(err)
+	}
+	return result
 }
