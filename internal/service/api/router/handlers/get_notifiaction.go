@@ -3,13 +3,15 @@ package handlers
 import (
 	"net/http"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/helpers"
+
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
 
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/requests"
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/router/requests"
 )
 
 func GetNotification(w http.ResponseWriter, r *http.Request) {
@@ -20,13 +22,13 @@ func GetNotification(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: Is allowed for destination
-	if !isAllowed(r, w) {
+	if !helpers.IsAllowed(r, w) {
 		return
 	}
 
-	notification, err := NotificationsQ(r).FilterByID(request.NotificationID).Get()
+	notification, err := helpers.NotificationsQ(r).FilterByID(request.NotificationID).Get()
 	if err != nil {
-		Log(r).WithError(err).Error("failed to get notification from DB")
+		helpers.Log(r).WithError(err).Error("failed to get notification from DB")
 		ape.Render(w, problems.InternalError())
 		return
 	}
@@ -35,9 +37,9 @@ func GetNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deliveries, err := DeliveriesQ(r).FilterByNotificationID(request.NotificationID).Select()
+	deliveries, err := helpers.DeliveriesQ(r).FilterByNotificationID(request.NotificationID).Select()
 	if err != nil {
-		Log(r).WithError(err).Error("failed to get deliveries from DB")
+		helpers.Log(r).WithError(err).Error("failed to get deliveries from DB")
 		ape.Render(w, problems.InternalError())
 		return
 	}

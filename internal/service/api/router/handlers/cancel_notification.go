@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/helpers"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 
@@ -13,7 +15,7 @@ import (
 
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/requests"
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/router/requests"
 )
 
 func CancelNotification(w http.ResponseWriter, r *http.Request) {
@@ -23,15 +25,15 @@ func CancelNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !isAllowed(r, w) {
+	if !helpers.IsAllowed(r, w) {
 		return
 	}
 
-	notification, err := NotificationsQ(r).
+	notification, err := helpers.NotificationsQ(r).
 		FilterByID(request.NotificationID).
 		Get()
 	if err != nil {
-		Log(r).WithError(err).Error("failed to get notification")
+		helpers.Log(r).WithError(err).Error("failed to get notification")
 		ape.Render(w, problems.InternalError())
 		return
 	}
@@ -46,12 +48,12 @@ func CancelNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deliveries, err := DeliveriesQ(r).
+	deliveries, err := helpers.DeliveriesQ(r).
 		SetStatus(data.DeliveryStatusCanceled).
 		FilterByNotificationID(notification.ID).
 		Update()
 	if err != nil {
-		Log(r).WithError(err).Error("failed to update deliveries status")
+		helpers.Log(r).WithError(err).Error("failed to update deliveries status")
 		ape.Render(w, problems.InternalError())
 		return
 	}

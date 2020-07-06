@@ -23,6 +23,9 @@ db:
 listener:
   addr: :8000
 
+registration_api:
+  addr: :8080
+
 cop:
   disabled: true
   endpoint: "http://..."

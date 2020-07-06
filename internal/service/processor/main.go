@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/types"
+
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/templates"
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/identifier"
@@ -23,15 +25,11 @@ import (
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/config"
 )
 
-type Processor interface {
-	Run(ctx context.Context)
-}
-
 const (
 	serviceName = "notifications-processor"
 )
 
-func NewProcessor(config config.Config, notificatorsStorage notificators.NotificatorsStorage) Processor {
+func NewProcessor(config config.Config, notificatorsStorage notificators.NotificatorsStorage) types.Service {
 	horizonConnector := horizon.NewConnector(config.Client())
 	return &processor{
 		log:            config.Log().WithField("runner", serviceName),
@@ -57,7 +55,7 @@ type processor struct {
 	templatesHelper                *templatesHelper
 }
 
-func (p *processor) Run(ctx context.Context) {
+func (p *processor) Run(ctx context.Context) error {
 	running.WithBackOff(ctx, p.log,
 		serviceName,
 		p.processNotifications,
@@ -65,6 +63,7 @@ func (p *processor) Run(ctx context.Context) {
 		10*time.Second,
 		10*time.Second,
 	)
+	return nil
 }
 
 func (p *processor) processNotifications(ctx context.Context) error {

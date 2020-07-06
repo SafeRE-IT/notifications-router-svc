@@ -3,13 +3,15 @@ package handlers
 import (
 	"net/http"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/helpers"
+
 	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
 
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/requests"
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/router/requests"
 )
 
 func GetNotificationsList(w http.ResponseWriter, r *http.Request) {
@@ -23,15 +25,15 @@ func GetNotificationsList(w http.ResponseWriter, r *http.Request) {
 	if request.FilterDestinationAccount != nil {
 		owners = append(owners, *request.FilterDestinationAccount)
 	}
-	if !isAllowed(r, w, owners...) {
+	if !helpers.IsAllowed(r, w, owners...) {
 		return
 	}
 
-	notificationsQ := NotificationsQ(r)
+	notificationsQ := helpers.NotificationsQ(r)
 	applyFilters(notificationsQ, request)
 	notifications, err := notificationsQ.Select()
 	if err != nil {
-		Log(r).WithError(err).Error("failed to get notifications")
+		helpers.Log(r).WithError(err).Error("failed to get notifications")
 		ape.Render(w, problems.InternalError())
 		return
 	}
@@ -42,21 +44,21 @@ func GetNotificationsList(w http.ResponseWriter, r *http.Request) {
 		notificationIds[i] = item.ID
 	}
 
-	deliveriesQ := DeliveriesQ(r).FilterByNotificationID(notificationIds...)
+	deliveriesQ := helpers.DeliveriesQ(r).FilterByNotificationID(notificationIds...)
 	if request.FilterDestinationAccount != nil {
 		deliveriesQ.FilterByDestination(*request.FilterDestinationAccount).
 			FilterByDestinationType(data.NotificationDestinationAccount)
 	}
 	deliveries, err := deliveriesQ.Select()
 	if err != nil {
-		Log(r).WithError(err).Error("failed to get deliveries")
+		helpers.Log(r).WithError(err).Error("failed to get deliveries")
 		ape.Render(w, problems.InternalError())
 		return
 	}
 
 	response := resources.NotificationListResponse{
 		Data:  newNotificationsList(notifications, deliveries),
-		Links: GetOffsetLinks(r, request.OffsetPageParams),
+		Links: helpers.GetOffsetLinks(r, request.OffsetPageParams),
 	}
 	if request.IncludeDeliveries {
 		response.Included = newNotificationIncluded(deliveries)

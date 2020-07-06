@@ -1,4 +1,4 @@
-package handlers
+package helpers
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 	"gitlab.com/tokend/go/signcontrol"
 )
 
-func isAllowed(r *http.Request, w http.ResponseWriter, dataOwners ...string) bool {
+func IsAllowed(r *http.Request, w http.ResponseWriter, dataOwners ...string) bool {
 	constraints := make([]doorman.SignerConstraint, 0, len(dataOwners))
 	for _, dataOwner := range dataOwners {
 		// invalid account address will make doorman return 401 w/o considering other constraints

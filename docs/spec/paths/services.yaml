@@ -1,0 +1,27 @@
+post:
+  tags:
+    - Services registration API
+  summary: Register notificator service
+  operationId: registerService
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - data
+          properties:
+            data:
+              type: object
+              $ref: '#/components/schemas/NotificatorService'
+    responses:
+      '200':
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  $ref: '#/components/schemas/NotificatorService'

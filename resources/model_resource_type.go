@@ -11,4 +11,5 @@ const (
 	CREATE_NOTIFICATION   ResourceType = "create-notification"
 	NOTIFICATION_DELIVERY ResourceType = "notification-delivery"
 	NOTIFICATION          ResourceType = "notification"
+	NOTIFICATOR_SERVICE   ResourceType = "notificator-service"
 )

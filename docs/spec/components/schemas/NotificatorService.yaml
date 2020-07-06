@@ -1,0 +1,16 @@
+allOf:
+  - $ref: '#/components/schemas/NotificatorServiceKey'
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - endpoint
+          - channel
+        properties:
+          endpoint:
+            type: string
+          channel:
+            type: string

@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/helpers"
+
 	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
 
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -13,7 +15,7 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/requests"
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/router/requests"
 )
 
 func CreateNotification(w http.ResponseWriter, r *http.Request) {
@@ -23,14 +25,14 @@ func CreateNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !isAllowed(r, w) {
+	if !helpers.IsAllowed(r, w) {
 		return
 	}
 
 	var resultNotification data.Notification
 	var resultDeliveries []data.Delivery
 
-	err = NotificationsQ(r).Transaction(func(q data.NotificationsQ) error {
+	err = helpers.NotificationsQ(r).Transaction(func(q data.NotificationsQ) error {
 		notification := data.Notification{
 			Topic:   request.Data.Attributes.Topic,
 			Token:   request.Data.Attributes.Token,
@@ -73,7 +75,7 @@ func CreateNotification(w http.ResponseWriter, r *http.Request) {
 		return nil
 	})
 	if err != nil {
-		Log(r).WithError(err).Error("failed to create notification")
+		helpers.Log(r).WithError(err).Error("failed to create notification")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}

@@ -2,51 +2,46 @@ package service
 
 import (
 	"context"
-	"net"
-	"net/http"
+	"sync"
+
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/router"
+
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/registration"
+
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/types"
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/notificators"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/processor"
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/processor"
 
-	"gitlab.com/distributed_lab/kit/copus/types"
-	"gitlab.com/distributed_lab/logan/v3"
-	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/config"
 )
 
-type service struct {
-	log                 *logan.Entry
-	copus               types.Copus
-	listener            net.Listener
-	cfg                 config.Config
-	notificatorsStorage notificators.NotificatorsStorage
-}
+func runService(service types.Service, wg *sync.WaitGroup) {
+	wg.Add(1)
+	go func() {
+		defer func() {
+			wg.Done()
+		}()
 
-func (s *service) run() error {
-	r := s.router()
-
-	if err := s.copus.RegisterChi(r); err != nil {
-		return errors.Wrap(err, "cop failed")
-	}
-
-	go processor.NewProcessor(s.cfg, s.notificatorsStorage).Run(context.Background())
-
-	return http.Serve(s.listener, r)
-}
-
-func newService(cfg config.Config) *service {
-	return &service{
-		log:                 cfg.Log(),
-		copus:               cfg.Copus(),
-		listener:            cfg.Listener(),
-		cfg:                 cfg,
-		notificatorsStorage: notificators.NewMemoryNotificationsStorage(),
-	}
+		if err := service.Run(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
 }
 
 func Run(cfg config.Config) {
-	if err := newService(cfg).run(); err != nil {
-		panic(err)
-	}
+	notificationsStorage := notificators.NewMemoryNotificationsStorage()
+	wg := &sync.WaitGroup{}
+
+	processorService := processor.NewProcessor(cfg, notificationsStorage)
+	runService(processorService, wg)
+
+	routerApi := router.NewRouterAPI(cfg)
+	runService(routerApi, wg)
+
+	registrationApi := registration.NewRegistrationAPI(cfg, notificationsStorage)
+	runService(registrationApi, wg)
+
+	wg.Wait()
 }
