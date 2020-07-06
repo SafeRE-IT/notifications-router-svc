@@ -8,8 +8,8 @@ import (
 )
 
 type NotificatorConfig struct {
-	DefaultChannel string `fig:"default_channel,required"`
-	DefaultLocale  string `fig:"default_locale"`
+	DefaultChannelsPriority []string `fig:"default_channels_priority,required"`
+	DefaultLocale           string   `fig:"default_locale"`
 }
 
 type Notificator interface {

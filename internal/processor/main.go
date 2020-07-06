@@ -126,12 +126,31 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 
 	// TODO: Check user settings if notification is disabled
 
-	// TODO: Get channel based on available identificator
-	channel, err := p.GetChannel(delivery, *notification)
+	channelsList, err := p.GetChannels(delivery, *notification)
 	if err != nil {
 		return errors.Wrap(err, "failed to get channel")
 	}
-	message, err := p.GetMessage(delivery, *notification, channel)
+
+	for _, channel := range channelsList {
+		err = p.sendNotification(channel, delivery, *notification)
+		if err != nil {
+			p.log.WithFields(map[string]interface{}{
+				"delivery_id":     delivery.ID,
+				"notification_id": delivery.NotificationID,
+			}).
+				WithError(err).
+				Warnf("failed to send notification with channel - %s, try next channel", channel)
+			continue
+		}
+
+		return nil
+	}
+
+	return errors.New("failed to send notification via all available channels")
+}
+
+func (p *processor) sendNotification(channel string, delivery data.Delivery, notification data.Notification) error {
+	message, err := p.GetMessage(delivery, notification, channel)
 	if err != nil {
 		return errors.Wrap(err, "failed to create message from template")
 	}
@@ -154,14 +173,14 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 	return nil
 }
 
-func (p *processor) GetChannel(delivery data.Delivery, notification data.Notification) (string, error) {
+func (p *processor) GetChannels(delivery data.Delivery, notification data.Notification) ([]string, error) {
 	if notification.Channel != nil {
-		return *notification.Channel, nil
+		return []string{*notification.Channel}, nil
 	}
 
 	// TODO: Get from user settings
 
-	return p.notificatorCfg.DefaultChannel, nil
+	return p.notificatorCfg.DefaultChannelsPriority, nil
 }
 
 func (p *processor) GetLocale(delivery data.Delivery, notification data.Notification) (string, error) {

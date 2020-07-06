@@ -11,7 +11,11 @@ doorman:
   skip_sign_check: false
 
 notificator:
-  default_channel: email
+  default_channels_priority:
+    - push
+    - sms
+    - email
+  default_locale: en # Optional
 
 db:
   url: db_url
