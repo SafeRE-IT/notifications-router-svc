@@ -11,7 +11,7 @@ import (
 	"gitlab.com/tokend/go/doorman"
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/horizon"
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/connectors/horizon"
 
 	"gitlab.com/distributed_lab/logan/v3"
 )

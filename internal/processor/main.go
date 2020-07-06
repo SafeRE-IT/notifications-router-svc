@@ -13,7 +13,7 @@ import (
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/notificators"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/horizon"
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/connectors/horizon"
 
 	"gitlab.com/distributed_lab/logan/v3/errors"
 
@@ -41,26 +41,26 @@ const (
 func NewProcessor(config config.Config, notificatorsStorage notificators.NotificatorsStorage) Processor {
 	horizonConnector := horizon.NewConnector(config.Client())
 	return &processor{
-		log:                 config.Log().WithField("runner", serviceName),
-		notificationsQ:      pg.NewNotificationsQ(config.DB()),
-		deliveriesQ:         pg.NewDeliveriesQ(config.DB()),
-		notificatorCfg:      config.NotificatorConfig(),
-		notificatorsStorage: notificatorsStorage,
-		horizon:             horizonConnector,
-		identifierProvider:  horizonConnector,
-		templatesProvider:   templates.NewHorizonTemplatesProvider(config.Client()),
+		log:            config.Log().WithField("runner", serviceName),
+		notificationsQ: pg.NewNotificationsQ(config.DB()),
+		deliveriesQ:    pg.NewDeliveriesQ(config.DB()),
+		notificatorCfg: config.NotificatorConfig(),
+		notificationsConnectorProvider: &notificatorsConnectorProvider{
+			notificatorsStorage: notificatorsStorage,
+		},
+		identifierProvider: horizonConnector,
+		templatesProvider:  templates.NewHorizonTemplatesProvider(config.Client()),
 	}
 }
 
 type processor struct {
-	log                 *logan.Entry
-	notificationsQ      data.NotificationsQ
-	deliveriesQ         data.DeliveriesQ
-	notificatorCfg      *config.NotificatorConfig
-	notificatorsStorage notificators.NotificatorsStorage
-	horizon             *horizon.Connector
-	identifierProvider  identifier.IdentifierProvider
-	templatesProvider   templates.TemplatesProvider
+	log                            *logan.Entry
+	notificationsQ                 data.NotificationsQ
+	deliveriesQ                    data.DeliveriesQ
+	notificatorCfg                 *config.NotificatorConfig
+	notificationsConnectorProvider *notificatorsConnectorProvider
+	identifierProvider             identifier.IdentifierProvider
+	templatesProvider              templates.TemplatesProvider
 }
 
 func (p *processor) Run(ctx context.Context) {
@@ -141,10 +141,15 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 		return errors.Wrap(err, "failed to get identifier")
 	}
 
-	println(channel)
-	println(string(mustMarshalJSON(message)))
-	println(string(mustMarshalJSON(id)))
-	//p.sendNotification(message, id.ID, channel)
+	connector, err := p.notificationsConnectorProvider.getByChannel(channel)
+	if err != nil {
+		return errors.Wrap(err, "failed to get notifications connector")
+	}
+
+	err = connector.SendNotification(id, message)
+	if err != nil {
+		return errors.Wrap(err, "failed to send notification")
+	}
 
 	return nil
 }
@@ -246,39 +251,10 @@ func interpolate(tmpl string, payload []byte) ([]byte, error) {
 	return res.Bytes(), nil
 }
 
-//func (p *processor) sendNotification(m mes, destination string, channel string) {
-//	notificatorService, err := p.notificatorsStorage.GetByChannel(channel)
-//	if err != nil {
-//		p.log.WithError(err).Error("failed to get notificator service")
-//	}
-//	connector := horizon.NewConnector(signed.NewClient(http.DefaultClient, &notificatorService.Endpoint))
-//
-//	err = connector.SendMessage(horizon.MessageRequest{
-//		Data: horizon.Message{
-//			Attributes: horizon.MessageAttributes{
-//				Owner: destination,
-//				Title: m.Title,
-//				Body:  m.Body,
-//			},
-//		},
-//	})
-//	if err != nil {
-//		p.log.WithError(err).Error("failed to send notification")
-//	}
-//}
-
 func (p *processor) SetDeliveryStatus(id int64, status data.DeliveryStatus) error {
 	_, err := p.deliveriesQ.New().
 		FilterById(id).
 		SetStatus(status).
 		Update()
 	return err
-}
-
-func mustMarshalJSON(data interface{}) []byte {
-	result, err := json.Marshal(data)
-	if err != nil {
-		panic(err)
-	}
-	return result
 }
