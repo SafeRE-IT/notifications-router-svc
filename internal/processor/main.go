@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"time"
 
@@ -81,19 +80,23 @@ func (p *processor) processNotifications(ctx context.Context) error {
 	}
 
 	for _, delivery := range deliveries {
-		p.log.Info("processing notification", map[string]interface{}{
-			"delivery_id":          delivery.ID,
-			"notification_id":      delivery.NotificationID,
-			"delivery_destination": delivery.Destination,
-		})
+		p.log.WithFields(map[string]interface{}{
+			"delivery_id":     delivery.ID,
+			"notification_id": delivery.NotificationID,
+		}).Info("processing notification")
 		err = p.processDelivery(delivery)
-		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to process delivery"),
-				map[string]interface{}{
-					"delivery_id":          delivery.ID,
-					"notification_id":      delivery.NotificationID,
-					"delivery_destination": delivery.Destination,
-				})
+		if err == nil {
+			if err := p.SetDeliveryStatus(delivery.ID, data.DeliveryStatusSent); err != nil {
+				return errors.Wrap(err, "failed to set delivery status")
+			}
+		} else {
+			p.log.WithFields(map[string]interface{}{
+				"delivery_id":     delivery.ID,
+				"notification_id": delivery.NotificationID,
+			}).WithError(err).Error("failed to send to notification, marking it as failed")
+			if err := p.SetDeliveryStatus(delivery.ID, data.DeliveryStatusFailed); err != nil {
+				return errors.Wrap(err, "failed to set delivery status")
+			}
 		}
 	}
 
@@ -120,13 +123,14 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 	if notification == nil {
 		return errors.New("failed to find notification for delivery")
 	}
-	p.log.Infof("sending notification %d, notification destination: %d", notification.ID, delivery.Destination)
 
 	// TODO: Check user settings if notification is disabled
 
-	// TODO: Add error handling
 	// TODO: Get channel based on available identificator
-	channel, _ := p.GetChannel(delivery, *notification)
+	channel, err := p.GetChannel(delivery, *notification)
+	if err != nil {
+		return errors.Wrap(err, "failed to get channel")
+	}
 	message, err := p.GetMessage(delivery, *notification, channel)
 	if err != nil {
 		return errors.Wrap(err, "failed to create message from template")
@@ -141,10 +145,6 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 	println(string(mustMarshalJSON(message)))
 	println(string(mustMarshalJSON(id)))
 	//p.sendNotification(message, id.ID, channel)
-
-	if err = p.SetDeliveryStatus(delivery.ID, data.DeliveryStatusSent); err != nil {
-		return errors.Wrap(err, "failed to mark delivery sent")
-	}
 
 	return nil
 }
