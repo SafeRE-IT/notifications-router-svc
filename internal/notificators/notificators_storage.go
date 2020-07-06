@@ -21,7 +21,9 @@ type memoryNotificatorsStorage struct {
 
 func (s *memoryNotificatorsStorage) Add(services ...NotificatorService) error {
 	for _, service := range services {
-		s.storage.Store(service.Channel, service)
+		for _, channel := range service.Channels {
+			s.storage.Store(channel, service)
+		}
 	}
 	return nil
 }

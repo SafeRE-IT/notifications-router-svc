@@ -24,7 +24,7 @@ func RegisterService(w http.ResponseWriter, r *http.Request) {
 
 	service := notificators.NotificatorService{
 		Endpoint: request.Endpoint,
-		Channel:  request.Channel,
+		Channels: request.Channels,
 	}
 	helpers.NotificatorsStorage(r).Add(service)
 
@@ -39,7 +39,7 @@ func newNotificationServiceResponse(service notificators.NotificatorService) res
 			},
 			Attributes: resources.NotificatorServiceAttributes{
 				Endpoint: service.Endpoint.String(),
-				Channel:  service.Channel,
+				Channels: service.Channels,
 			},
 		},
 	}

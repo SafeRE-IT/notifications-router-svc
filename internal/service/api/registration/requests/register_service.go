@@ -16,7 +16,7 @@ import (
 
 type RegisterServiceRequest struct {
 	Endpoint url.URL
-	Channel  string
+	Channels []string
 }
 
 func NewRegisterServiceRequest(r *http.Request) (RegisterServiceRequest, error) {
@@ -39,13 +39,14 @@ func NewRegisterServiceRequest(r *http.Request) (RegisterServiceRequest, error) 
 
 	return RegisterServiceRequest{
 		Endpoint: *endpoint,
-		Channel:  request.Data.Attributes.Channel,
+		Channels: request.Data.Attributes.Channels,
 	}, nil
 }
 
 func validateRegisterServiceRequest(r resources.NotificatorServiceResponse) error {
 	return validation.Errors{
 		"data/attributes/endpoint": validation.Validate(&r.Data.Attributes.Endpoint, validation.Required, is.RequestURI),
-		"data/attributes/channel":  validation.Validate(&r.Data.Attributes.Channel, validation.Required),
+		"data/attributes/channels": validation.Validate(&r.Data.Attributes.Channels, validation.Required,
+			validation.Length(1, 100)),
 	}.Filter()
 }

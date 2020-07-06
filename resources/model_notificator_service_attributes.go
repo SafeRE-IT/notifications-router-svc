@@ -5,6 +5,6 @@
 package resources
 
 type NotificatorServiceAttributes struct {
-	Channel  string `json:"channel"`
-	Endpoint string `json:"endpoint"`
+	Channels []string `json:"channels"`
+	Endpoint string   `json:"endpoint"`
 }
