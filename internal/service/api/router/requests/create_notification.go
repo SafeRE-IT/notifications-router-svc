@@ -6,6 +6,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-ozzo/ozzo-validation/is"
+
+	"github.com/asaskevich/govalidator"
+
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/types"
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
@@ -42,39 +46,19 @@ func (r *CreateNotificationRequest) validate() error {
 			validation.Min(data.NotificationsPriorityLowest),
 			validation.Max(data.NotificationsPriorityHighest),
 		),
-		"/data/attributes/channel": nil, // TODO: Check that it is a valid delivery type
+		"/data/attributes/message/type":       validation.Validate(&r.Data.Attributes.Message.Type, validation.Required),
+		"/data/attributes/message/attributes": validation.Validate(&r.Data.Attributes.Message.Attributes, validation.Required, is.JSON),
 	},
 		validateDestinationsList(r.Data.Relationships.Destinations.Data),
-		validateMessage(r.Data.Attributes.Message),
 	).Filter()
 }
 
-func validateMessage(message resources.Message) validation.Errors {
-	validationErrors := validation.Errors{
-		"/data/attributes/message/type": validation.Validate(&message.Type, validation.Required),
-	}
-
-	if message.Type == data.NotificationMessageTemplate {
-		var templateMes data.TemplateMessageAttributes
-		err := json.Unmarshal(message.Attributes, &templateMes)
-		if err != nil {
-			validationErrors["/data/attributes/message/attributes"] = errors.New("must be valid json object")
-			return validationErrors
-		}
-		// TODO: validate payload and locale
-	}
-
-	return validationErrors
-}
-
 func validateDestinationsList(destinations []resources.Key) validation.Errors {
-	// TODO: get max destinations from config
 	validationErrors := validation.Errors{
 		"/data/relationships/destinations/data": validation.Validate(&destinations,
 			validation.Required, validation.Length(1, 100)),
 	}
 
-	// TODO: check for duplicates
 	for i, destination := range destinations {
 		validationErrors[fmt.Sprintf("/data/relationships/destinations/data/%d", i)] =
 			// TODO: Use string instead of type
@@ -85,10 +69,16 @@ func validateDestinationsList(destinations []resources.Key) validation.Errors {
 }
 
 func validateDestination(destinationType string, destination string) error {
-	// TODO: Add validation of other types
 	switch destinationType {
 	case data.NotificationDestinationAccount:
 		return types.AccountID(destination).Validate()
+	case data.NotificationDestinationEmail:
+		if !govalidator.IsEmail(destination) {
+			return errors.New("must be valid email")
+		}
+		return nil
+	case data.NotificationDestinationPhone:
+		return types.ValidatePhoneNumber(destination)
 	default:
 		return nil
 	}
