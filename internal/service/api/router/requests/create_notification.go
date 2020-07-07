@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-ozzo/ozzo-validation/is"
-
 	"github.com/asaskevich/govalidator"
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/types"
@@ -47,7 +45,7 @@ func (r *CreateNotificationRequest) validate() error {
 			validation.Max(data.NotificationsPriorityHighest),
 		),
 		"/data/attributes/message/type":       validation.Validate(&r.Data.Attributes.Message.Type, validation.Required),
-		"/data/attributes/message/attributes": validation.Validate(&r.Data.Attributes.Message.Attributes, validation.Required, is.JSON),
+		"/data/attributes/message/attributes": validation.Validate(&r.Data.Attributes.Message.Attributes, validation.Required),
 	},
 		validateDestinationsList(r.Data.Relationships.Destinations.Data),
 	).Filter()

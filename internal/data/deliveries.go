@@ -32,6 +32,7 @@ const (
 	DeliveryStatusFailed   DeliveryStatus = "failed"
 	DeliveryStatusSent     DeliveryStatus = "sent"
 	DeliveryStatusCanceled DeliveryStatus = "canceled"
+	DeliveryStatusSkipped  DeliveryStatus = "skipped"
 )
 
 type Delivery struct {

@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/settings"
+
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/types"
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/templates"
@@ -43,6 +45,7 @@ func NewProcessor(config config.Config, notificatorsStorage notificators.Notific
 			notificatorCfg:    config.NotificatorConfig(),
 			templatesProvider: templates.NewHorizonTemplatesProvider(config.Client()),
 		},
+		settingsProvider: horizonConnector,
 	}
 }
 
@@ -53,6 +56,7 @@ type processor struct {
 	notificationsConnectorProvider *notificatorsConnectorProvider
 	identifierProvider             identifier.IdentifierProvider
 	templatesHelper                *templatesHelper
+	settingsProvider               settings.SettingsProvider
 }
 
 func (p *processor) Run(ctx context.Context) error {
@@ -102,9 +106,21 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 		return errors.Wrap(err, "failed to get notification")
 	}
 
-	// TODO: Check user settings if notification is disabled
+	if delivery.DestinationType == data.NotificationDestinationAccount {
+		enabled, err := p.settingsProvider.IsTopicEnabled(delivery.Destination, notification.Topic)
+		if err != nil {
+			return errors.Wrap(err, "failed to check if topic is available")
+		}
+		if !enabled {
+			err = p.querier.setDeliveryStatus(delivery.ID, data.DeliveryStatusSkipped)
+			if err != nil {
+				return errors.Wrap(err, "failed to mark delivery skipped")
+			}
+			return nil
+		}
+	}
 
-	channelsList, err := p.GetChannels(delivery, notification)
+	channelsList, err := p.getChannels(delivery, notification)
 	if err != nil {
 		return errors.Wrap(err, "failed to get channel")
 	}
@@ -133,7 +149,7 @@ func (p *processor) sendNotification(channel string, delivery data.Delivery, not
 		return errors.Wrap(err, "failed to create message from template")
 	}
 
-	id, err := p.GetIdentifier(channel, delivery)
+	id, err := p.getIdentifier(channel, delivery)
 	if err != nil {
 		return errors.Wrap(err, "failed to get identifier")
 	}
@@ -151,17 +167,25 @@ func (p *processor) sendNotification(channel string, delivery data.Delivery, not
 	return nil
 }
 
-func (p *processor) GetChannels(delivery data.Delivery, notification data.Notification) ([]string, error) {
+func (p *processor) getChannels(delivery data.Delivery, notification data.Notification) ([]string, error) {
 	if notification.Channel != nil {
 		return []string{*notification.Channel}, nil
 	}
 
-	// TODO: Get from user settings
+	if delivery.DestinationType == data.NotificationDestinationAccount {
+		channels, err := p.settingsProvider.GetChannels(delivery.Destination)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get channels priority from settings")
+		}
+		if channels != nil {
+			return channels, nil
+		}
+	}
 
 	return p.notificatorCfg.DefaultChannelsPriority, nil
 }
 
-func (p *processor) GetIdentifier(channel string, delivery data.Delivery) (identifier.Identifier, error) {
+func (p *processor) getIdentifier(channel string, delivery data.Delivery) (identifier.Identifier, error) {
 	if delivery.DestinationType != data.NotificationDestinationAccount {
 		return identifier.Identifier{
 			ID:   delivery.Destination,
