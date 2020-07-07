@@ -30,7 +30,7 @@ type restNotificationsConnector struct {
 }
 
 func (c *restNotificationsConnector) SendNotification(identifier identifier.Identifier, message data.Message) error {
-	path, err := url.Parse("notification")
+	path, err := url.Parse("notifications")
 	if err != nil {
 		return errors.Wrap(err, "failed to parse url")
 	}

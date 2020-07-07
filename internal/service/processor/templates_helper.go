@@ -16,6 +16,7 @@ type templatesHelper struct {
 	notificatorCfg    *config.NotificatorConfig
 }
 
+// TODO: Add files processing
 func (h *templatesHelper) buildMessage(channel string, delivery data.Delivery, notification data.Notification) (data.Message, error) {
 	if notification.Message.Type != data.NotificationMessageTemplate {
 		return notification.Message, nil
