@@ -1,4 +1,4 @@
-FROM golang:1.12
+FROM golang:1.14
 
 WORKDIR /go/src/gitlab.com/tokend/notifications/notifications-router-svc
 COPY . .
