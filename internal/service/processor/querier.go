@@ -32,7 +32,7 @@ func (q *querier) getPendingDeliveries() ([]data.Delivery, error) {
 
 // TODO: Join into deliveries
 func (q *querier) getNotification(id int64) (data.Notification, error) {
-	result, err := q.notificationsQ.
+	result, err := q.notificationsQ.New().
 		FilterByID(id).
 		Get()
 	if result == nil {
