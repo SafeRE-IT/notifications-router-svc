@@ -69,11 +69,11 @@ func GetNotificationsList(w http.ResponseWriter, r *http.Request) {
 func applyFilters(q data.NotificationsQ, request requests.GetNotificationsListRequest) {
 	q.Page(request.OffsetPageParams)
 
-	if request.FilterToken != nil {
+	if len(request.FilterToken) > 0 {
 		q.FilterByToken(request.FilterToken...)
 	}
 
-	if request.FilterTopic != nil {
+	if len(request.FilterTopic) > 0 {
 		q.FilterByTopic(request.FilterTopic...)
 	}
 
