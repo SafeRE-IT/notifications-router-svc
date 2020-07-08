@@ -61,6 +61,7 @@ type processor struct {
 }
 
 func (p *processor) Run(ctx context.Context) error {
+	p.log.Info("started processor")
 	running.WithBackOff(ctx, p.log,
 		serviceName,
 		p.processNotifications,
@@ -78,20 +79,16 @@ func (p *processor) processNotifications(ctx context.Context) error {
 	}
 
 	for _, delivery := range deliveries {
-		p.log.WithFields(map[string]interface{}{
-			"delivery_id":     delivery.ID,
-			"notification_id": delivery.NotificationID,
-		}).Info("processing notification")
+		p.log.WithFields(getLoggerFields(delivery)).
+			Info("processing notification")
 		err = p.processDelivery(delivery)
 		if err == nil {
 			if err := p.querier.setDeliveryStatus(delivery.ID, data.DeliveryStatusSent); err != nil {
 				return errors.Wrap(err, "failed to set delivery status")
 			}
 		} else {
-			p.log.WithFields(map[string]interface{}{
-				"delivery_id":     delivery.ID,
-				"notification_id": delivery.NotificationID,
-			}).WithError(err).Error("failed to send to notification, marking it as failed")
+			p.log.WithFields(getLoggerFields(delivery)).WithError(err).
+				Error("failed to send to notification, marking it as failed")
 			if err := p.querier.setDeliveryStatus(delivery.ID, data.DeliveryStatusFailed); err != nil {
 				return errors.Wrap(err, "failed to set delivery status")
 			}
@@ -113,6 +110,8 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 			return errors.Wrap(err, "failed to check if topic is available")
 		}
 		if !enabled {
+			p.log.WithFields(getLoggerFields(delivery)).
+				Info("notification is disabled in user settings, skip sending")
 			err = p.querier.setDeliveryStatus(delivery.ID, data.DeliveryStatusSkipped)
 			if err != nil {
 				return errors.Wrap(err, "failed to mark delivery skipped")
@@ -129,10 +128,7 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 	for _, channel := range channelsList {
 		err = p.sendNotification(channel, delivery, notification)
 		if err != nil {
-			p.log.WithFields(map[string]interface{}{
-				"delivery_id":     delivery.ID,
-				"notification_id": delivery.NotificationID,
-			}).
+			p.log.WithFields(getLoggerFields(delivery)).
 				WithError(err).
 				Warnf("failed to send notification with channel - %s, try next channel", channel)
 			continue
@@ -205,4 +201,12 @@ func (p *processor) getIdentifier(channel string, delivery data.Delivery) (ident
 	}
 
 	return *id, nil
+}
+
+func getLoggerFields(delivery data.Delivery) map[string]interface{} {
+	return map[string]interface{}{
+		"delivery_id":     delivery.ID,
+		"notification_id": delivery.NotificationID,
+		"destination":     delivery.Destination,
+	}
 }
