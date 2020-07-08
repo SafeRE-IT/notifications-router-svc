@@ -106,19 +106,19 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 		return errors.Wrap(err, "failed to get notification")
 	}
 
-	//if delivery.DestinationType == data.NotificationDestinationAccount {
-	//	enabled, err := p.settingsProvider.IsTopicEnabled(delivery.Destination, notification.Topic)
-	//	if err != nil {
-	//		return errors.Wrap(err, "failed to check if topic is available")
-	//	}
-	//	if !enabled {
-	//		err = p.querier.setDeliveryStatus(delivery.ID, data.DeliveryStatusSkipped)
-	//		if err != nil {
-	//			return errors.Wrap(err, "failed to mark delivery skipped")
-	//		}
-	//		return nil
-	//	}
-	//}
+	if delivery.DestinationType == data.NotificationDestinationAccount {
+		enabled, err := p.settingsProvider.IsTopicEnabled(delivery.Destination, notification.Topic)
+		if err != nil {
+			return errors.Wrap(err, "failed to check if topic is available")
+		}
+		if !enabled {
+			err = p.querier.setDeliveryStatus(delivery.ID, data.DeliveryStatusSkipped)
+			if err != nil {
+				return errors.Wrap(err, "failed to mark delivery skipped")
+			}
+			return nil
+		}
+	}
 
 	channelsList, err := p.getChannels(delivery, notification)
 	if err != nil {
@@ -172,15 +172,15 @@ func (p *processor) getChannels(delivery data.Delivery, notification data.Notifi
 		return []string{*notification.Channel}, nil
 	}
 
-	//if delivery.DestinationType == data.NotificationDestinationAccount {
-	//	channels, err := p.settingsProvider.GetChannels(delivery.Destination)
-	//	if err != nil {
-	//		return nil, errors.Wrap(err, "failed to get channels priority from settings")
-	//	}
-	//	if channels != nil {
-	//		return channels, nil
-	//	}
-	//}
+	if delivery.DestinationType == data.NotificationDestinationAccount {
+		channels, err := p.settingsProvider.GetChannels(delivery.Destination)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get channels priority from settings")
+		}
+		if len(channels) == 0 {
+			return channels, nil
+		}
+	}
 
 	return p.notificatorCfg.DefaultChannelsPriority, nil
 }

@@ -34,7 +34,12 @@ func (c *Connector) IsTopicEnabled(accountId, topic string) (bool, error) {
 		return false, errors.Wrap(err, "failed to unmarshal notification settings")
 	}
 
-	return availability[topic], nil
+	enabled, ok := availability[topic]
+	if !ok {
+		return true, nil
+	}
+
+	return enabled, nil
 }
 
 func (c *Connector) GetChannels(accountId string) ([]string, error) {
@@ -90,6 +95,9 @@ func (c *Connector) GetSettingsItem(accountId, key string) (*SettingsItem, error
 		}
 		return nil, errors.Wrap(err, "failed to send request")
 	}
+	if settingsItem.Data.Attributes.Value == nil {
+		return nil, nil
+	}
 
 	return &settingsItem.Data, nil
 }
@@ -104,5 +112,5 @@ type SettingsItem struct {
 
 type SettingsItemAttributes struct {
 	Key   string
-	Value json.RawMessage
+	Value []byte
 }
