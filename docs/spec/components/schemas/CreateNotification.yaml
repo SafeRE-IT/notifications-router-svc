@@ -32,6 +32,7 @@ allOf:
             type: string
           priority:
             type: int32
+            format: NotificationPriority
             default: 3
             enum:
               - 1

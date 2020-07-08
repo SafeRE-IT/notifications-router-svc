@@ -70,7 +70,7 @@ func newDeliveryModel(delivery data.Delivery) resources.Delivery {
 			Destination:     delivery.Destination,
 			DestinationType: delivery.DestinationType,
 			SentAt:          delivery.SentAt,
-			Status:          string(delivery.Status), // TODO: Use enums from resources
+			Status:          delivery.Status,
 		},
 	}
 }

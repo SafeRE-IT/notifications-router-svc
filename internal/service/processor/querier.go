@@ -4,6 +4,8 @@ import (
 	"errors"
 	"time"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
+
 	"gitlab.com/distributed_lab/kit/pgdb"
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data/pg"
@@ -24,7 +26,7 @@ type querier struct {
 func (q *querier) getPendingDeliveries() ([]data.Delivery, error) {
 	return q.deliveriesQ.New().
 		JoinNotification().
-		FilterByStatus(data.DeliveryStatusNotSent).
+		FilterByStatus(resources.DeliveryStatusNotSent).
 		FilterByScheduledBefore(time.Now().UTC()).
 		OrderByPriority(pgdb.OrderTypeDesc).
 		Select()
@@ -41,7 +43,7 @@ func (q *querier) getNotification(id int64) (data.Notification, error) {
 	return *result, err
 }
 
-func (q *querier) setDeliveryStatus(id int64, status data.DeliveryStatus) error {
+func (q *querier) setDeliveryStatus(id int64, status resources.DeliveryStatus) error {
 	_, err := q.deliveriesQ.New().
 		FilterById(id).
 		SetStatus(status).

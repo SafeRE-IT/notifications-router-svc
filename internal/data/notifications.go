@@ -3,6 +3,8 @@ package data
 import (
 	"time"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
+
 	"gitlab.com/distributed_lab/kit/pgdb"
 )
 
@@ -28,16 +30,6 @@ type NotificationsQ interface {
 	FilterByScheduledBefore(time time.Time) NotificationsQ
 }
 
-type NotificationPriority int32
-
-const (
-	NotificationsPriorityLowest NotificationPriority = iota + 1
-	NotificationsPriorityLow
-	NotificationsPriorityMedium
-	NotificationsPriorityHigh
-	NotificationsPriorityHighest
-)
-
 const (
 	NotificationDestinationAccount = "notification-destination-account"
 	NotificationDestinationEmail   = "notidication-destination-email"
@@ -45,12 +37,12 @@ const (
 )
 
 type Notification struct {
-	ID           int64                `db:"id" structs:"-"`
-	CreatedAt    time.Time            `db:"created_at" structs:"created_at"`
-	ScheduledFor time.Time            `db:"scheduled_for" structs:"scheduled_for"`
-	Topic        string               `db:"topic" structs:"topic"`
-	Token        *string              `db:"token" structs:"token"`
-	Priority     NotificationPriority `db:"priority" structs:"priority"`
-	Channel      *string              `db:"channel" structs:"channel"`
-	Message      Message              `db:"message" structs:"-"`
+	ID           int64                          `db:"id" structs:"-"`
+	CreatedAt    time.Time                      `db:"created_at" structs:"created_at"`
+	ScheduledFor time.Time                      `db:"scheduled_for" structs:"scheduled_for"`
+	Topic        string                         `db:"topic" structs:"topic"`
+	Token        *string                        `db:"token" structs:"token"`
+	Priority     resources.NotificationPriority `db:"priority" structs:"priority"`
+	Channel      *string                        `db:"channel" structs:"channel"`
+	Message      Message                        `db:"message" structs:"-"`
 }

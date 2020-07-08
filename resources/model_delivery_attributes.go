@@ -7,8 +7,8 @@ package resources
 import "time"
 
 type DeliveryAttributes struct {
-	Destination     string     `json:"destination"`
-	DestinationType string     `json:"destination_type"`
-	SentAt          *time.Time `json:"sent_at,omitempty"`
-	Status          string     `json:"status"`
+	Destination     string         `json:"destination"`
+	DestinationType string         `json:"destination_type"`
+	SentAt          *time.Time     `json:"sent_at,omitempty"`
+	Status          DeliveryStatus `json:"status"`
 }

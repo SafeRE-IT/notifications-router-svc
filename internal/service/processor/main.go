@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
+
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/settings"
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/types"
@@ -83,13 +85,13 @@ func (p *processor) processNotifications(ctx context.Context) error {
 			Info("processing notification")
 		err = p.processDelivery(delivery)
 		if err == nil {
-			if err := p.querier.setDeliveryStatus(delivery.ID, data.DeliveryStatusSent); err != nil {
+			if err := p.querier.setDeliveryStatus(delivery.ID, resources.DeliveryStatusSent); err != nil {
 				return errors.Wrap(err, "failed to set delivery status")
 			}
 		} else {
 			p.log.WithFields(getLoggerFields(delivery)).WithError(err).
 				Error("failed to send to notification, marking it as failed")
-			if err := p.querier.setDeliveryStatus(delivery.ID, data.DeliveryStatusFailed); err != nil {
+			if err := p.querier.setDeliveryStatus(delivery.ID, resources.DeliveryStatusFailed); err != nil {
 				return errors.Wrap(err, "failed to set delivery status")
 			}
 		}
@@ -112,7 +114,7 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 		if !enabled {
 			p.log.WithFields(getLoggerFields(delivery)).
 				Info("notification is disabled in user settings, skip sending")
-			err = p.querier.setDeliveryStatus(delivery.ID, data.DeliveryStatusSkipped)
+			err = p.querier.setDeliveryStatus(delivery.ID, resources.DeliveryStatusSkipped)
 			if err != nil {
 				return errors.Wrap(err, "failed to mark delivery skipped")
 			}
