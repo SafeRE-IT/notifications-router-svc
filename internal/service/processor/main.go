@@ -44,6 +44,7 @@ func NewProcessor(config config.Config, notificatorsStorage notificators.Notific
 		templatesHelper: &templatesHelper{
 			notificatorCfg:    config.NotificatorConfig(),
 			templatesProvider: templates.NewHorizonTemplatesProvider(config.Client()),
+			settingsProvider:  horizonConnector,
 		},
 		settingsProvider: horizonConnector,
 	}

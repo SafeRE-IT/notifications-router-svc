@@ -3,6 +3,8 @@ package processor
 import (
 	"encoding/json"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/settings"
+
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/templates"
 
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -14,6 +16,7 @@ import (
 type templatesHelper struct {
 	templatesProvider templates.TemplatesProvider
 	notificatorCfg    *config.NotificatorConfig
+	settingsProvider  settings.SettingsProvider
 }
 
 // TODO: Add files processing
@@ -28,7 +31,7 @@ func (h *templatesHelper) buildMessage(channel string, delivery data.Delivery, n
 		return data.Message{}, errors.Wrap(err, "failed to get template")
 	}
 
-	locale, err := h.getLocale(delivery, notification)
+	locale, err := h.getLocale(delivery, templateAttrs)
 	if err != nil {
 		return data.Message{}, errors.Wrap(err, "failed to get locale")
 	}
@@ -58,8 +61,21 @@ func (h *templatesHelper) buildMessage(channel string, delivery data.Delivery, n
 	return result, nil
 }
 
-// TODO: Get locale: 1. Notification model 2. User settings 3. Default for service
 // TODO: Use array of locales with priority instead of one locale
-func (h *templatesHelper) getLocale(delivery data.Delivery, notification data.Notification) (string, error) {
+func (h *templatesHelper) getLocale(delivery data.Delivery, templateAttrs data.TemplateMessageAttributes) (string, error) {
+	if templateAttrs.Locale != nil {
+		return *templateAttrs.Locale, nil
+	}
+
+	if delivery.DestinationType == data.NotificationDestinationAccount {
+		locale, err := h.settingsProvider.GetLocale(delivery.Destination)
+		if err != nil {
+			return "", errors.Wrap(err, "failed to get locale from settings")
+		}
+		if locale != nil {
+			return *locale, nil
+		}
+	}
+
 	return h.notificatorCfg.DefaultLocale, nil
 }
