@@ -95,11 +95,15 @@ func (c *Connector) GetSettingsItem(accountId, key string) (*SettingsItem, error
 		}
 		return nil, errors.Wrap(err, "failed to send request")
 	}
-	if settingsItem.Data.Attributes.Value == nil {
+	if isJsonNull(settingsItem.Data.Attributes.Value) {
 		return nil, nil
 	}
 
 	return &settingsItem.Data, nil
+}
+
+func isJsonNull(json json.RawMessage) bool {
+	return string(json) == "null"
 }
 
 type SettingsItemResponse struct {
@@ -112,5 +116,5 @@ type SettingsItem struct {
 
 type SettingsItemAttributes struct {
 	Key   string
-	Value []byte
+	Value json.RawMessage
 }
