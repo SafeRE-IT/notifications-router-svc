@@ -84,11 +84,7 @@ func (p *processor) processNotifications(ctx context.Context) error {
 		p.log.WithFields(getLoggerFields(delivery)).
 			Info("processing notification")
 		err = p.processDelivery(delivery)
-		if err == nil {
-			if err := p.querier.setDeliveryStatus(delivery.ID, resources.DeliveryStatusSent); err != nil {
-				return errors.Wrap(err, "failed to set delivery status")
-			}
-		} else {
+		if err != nil {
 			p.log.WithFields(getLoggerFields(delivery)).WithError(err).
 				Error("failed to send to notification, marking it as failed")
 			if err := p.querier.setDeliveryStatus(delivery.ID, resources.DeliveryStatusFailed); err != nil {
@@ -136,6 +132,9 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 			continue
 		}
 
+		if err := p.querier.setDeliveryStatus(delivery.ID, resources.DeliveryStatusSent); err != nil {
+			return errors.Wrap(err, "failed to set delivery status")
+		}
 		return nil
 	}
 
