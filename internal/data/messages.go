@@ -31,4 +31,5 @@ func (m *Message) Scan(src interface{}) error {
 type TemplateMessageAttributes struct {
 	Payload *json.RawMessage `json:"payload"`
 	Locale  *string          `json:"locale"`
+	Files   []string         `json:"files"`
 }

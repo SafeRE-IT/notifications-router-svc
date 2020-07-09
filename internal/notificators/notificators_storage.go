@@ -5,6 +5,7 @@ import (
 	"sync"
 )
 
+// TODO: Add persistent storage
 type NotificatorsStorage interface {
 	Add(services ...NotificatorService) error
 	GetByChannel(channel string) (NotificatorService, error)

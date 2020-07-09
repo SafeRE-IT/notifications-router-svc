@@ -19,7 +19,6 @@ type templatesHelper struct {
 	settingsProvider  settings.SettingsProvider
 }
 
-// TODO: Add files processing
 func (h *templatesHelper) buildMessage(channel string, delivery data.Delivery, notification data.Notification) (data.Message, error) {
 	if notification.Message.Type != data.NotificationMessageTemplate {
 		return notification.Message, nil
@@ -58,6 +57,13 @@ func (h *templatesHelper) buildMessage(channel string, delivery data.Delivery, n
 		return data.Message{}, errors.Wrap(err, "failed to marshal template to message")
 	}
 
+	if len(templateAttrs.Files) > 0 {
+		result, err = appendFiles(result, templateAttrs.Files)
+		if err != nil {
+			return data.Message{}, errors.Wrap(err, "failed to append files to message")
+		}
+	}
+
 	return result, nil
 }
 
@@ -78,4 +84,20 @@ func (h *templatesHelper) getLocale(delivery data.Delivery, templateAttrs data.T
 	}
 
 	return h.notificatorCfg.DefaultLocale, nil
+}
+
+func appendFiles(destMessage data.Message, files []string) (data.Message, error) {
+	var rawAttrs map[string]interface{}
+	err := json.Unmarshal(destMessage.Attributes, &rawAttrs)
+	if err != nil {
+		return data.Message{}, errors.Wrap(err, "failed to unmarshal message attributes")
+	}
+
+	rawAttrs["files"] = files
+	destMessage.Attributes, err = json.Marshal(rawAttrs)
+	if err != nil {
+		return data.Message{}, errors.Wrap(err, "failed to marshal message attributes")
+	}
+
+	return destMessage, nil
 }
