@@ -34,17 +34,17 @@ func CancelNotification(w http.ResponseWriter, r *http.Request) {
 		Get()
 	if err != nil {
 		helpers.Log(r).WithError(err).Error("failed to get notification")
-		ape.Render(w, problems.InternalError())
+		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 	if notification == nil {
-		ape.Render(w, problems.NotFound())
+		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
 	if notification.ScheduledFor.Before(time.Now().UTC()) {
-		ape.Render(w, problems.BadRequest(validation.Errors{
-			"id": errors.New("only notifications scheduled for future can be canceled")}))
+		ape.RenderErr(w, problems.BadRequest(validation.Errors{
+			"id": errors.New("only notifications scheduled for future can be canceled")})...)
 		return
 	}
 
@@ -54,7 +54,7 @@ func CancelNotification(w http.ResponseWriter, r *http.Request) {
 		Update()
 	if err != nil {
 		helpers.Log(r).WithError(err).Error("failed to update deliveries status")
-		ape.Render(w, problems.InternalError())
+		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
