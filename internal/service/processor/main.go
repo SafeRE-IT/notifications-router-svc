@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
+
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/settings"
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/types"
@@ -44,6 +46,7 @@ func NewProcessor(config config.Config, notificatorsStorage notificators.Notific
 		templatesHelper: &templatesHelper{
 			notificatorCfg:    config.NotificatorConfig(),
 			templatesProvider: templates.NewHorizonTemplatesProvider(config.Client()),
+			settingsProvider:  horizonConnector,
 		},
 		settingsProvider: horizonConnector,
 	}
@@ -60,6 +63,7 @@ type processor struct {
 }
 
 func (p *processor) Run(ctx context.Context) error {
+	p.log.Info("started processor")
 	running.WithBackOff(ctx, p.log,
 		serviceName,
 		p.processNotifications,
@@ -77,21 +81,13 @@ func (p *processor) processNotifications(ctx context.Context) error {
 	}
 
 	for _, delivery := range deliveries {
-		p.log.WithFields(map[string]interface{}{
-			"delivery_id":     delivery.ID,
-			"notification_id": delivery.NotificationID,
-		}).Info("processing notification")
+		p.log.WithFields(getLoggerFields(delivery)).
+			Info("processing notification")
 		err = p.processDelivery(delivery)
-		if err == nil {
-			if err := p.querier.setDeliveryStatus(delivery.ID, data.DeliveryStatusSent); err != nil {
-				return errors.Wrap(err, "failed to set delivery status")
-			}
-		} else {
-			p.log.WithFields(map[string]interface{}{
-				"delivery_id":     delivery.ID,
-				"notification_id": delivery.NotificationID,
-			}).WithError(err).Error("failed to send to notification, marking it as failed")
-			if err := p.querier.setDeliveryStatus(delivery.ID, data.DeliveryStatusFailed); err != nil {
+		if err != nil {
+			p.log.WithFields(getLoggerFields(delivery)).WithError(err).
+				Error("failed to send to notification, marking it as failed")
+			if err := p.querier.setDeliveryStatus(delivery.ID, resources.DeliveryStatusFailed); err != nil {
 				return errors.Wrap(err, "failed to set delivery status")
 			}
 		}
@@ -106,19 +102,21 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 		return errors.Wrap(err, "failed to get notification")
 	}
 
-	//if delivery.DestinationType == data.NotificationDestinationAccount {
-	//	enabled, err := p.settingsProvider.IsTopicEnabled(delivery.Destination, notification.Topic)
-	//	if err != nil {
-	//		return errors.Wrap(err, "failed to check if topic is available")
-	//	}
-	//	if !enabled {
-	//		err = p.querier.setDeliveryStatus(delivery.ID, data.DeliveryStatusSkipped)
-	//		if err != nil {
-	//			return errors.Wrap(err, "failed to mark delivery skipped")
-	//		}
-	//		return nil
-	//	}
-	//}
+	if delivery.DestinationType == data.NotificationDestinationAccount {
+		enabled, err := p.settingsProvider.IsTopicEnabled(delivery.Destination, notification.Topic)
+		if err != nil {
+			return errors.Wrap(err, "failed to check if topic is available")
+		}
+		if !enabled {
+			p.log.WithFields(getLoggerFields(delivery)).
+				Info("notification is disabled in user settings, skip sending")
+			err = p.querier.setDeliveryStatus(delivery.ID, resources.DeliveryStatusSkipped)
+			if err != nil {
+				return errors.Wrap(err, "failed to mark delivery skipped")
+			}
+			return nil
+		}
+	}
 
 	channelsList, err := p.getChannels(delivery, notification)
 	if err != nil {
@@ -128,15 +126,15 @@ func (p *processor) processDelivery(delivery data.Delivery) error {
 	for _, channel := range channelsList {
 		err = p.sendNotification(channel, delivery, notification)
 		if err != nil {
-			p.log.WithFields(map[string]interface{}{
-				"delivery_id":     delivery.ID,
-				"notification_id": delivery.NotificationID,
-			}).
+			p.log.WithFields(getLoggerFields(delivery)).
 				WithError(err).
 				Warnf("failed to send notification with channel - %s, try next channel", channel)
 			continue
 		}
 
+		if err := p.querier.setDeliveryStatus(delivery.ID, resources.DeliveryStatusSent); err != nil {
+			return errors.Wrap(err, "failed to set delivery status")
+		}
 		return nil
 	}
 
@@ -172,15 +170,15 @@ func (p *processor) getChannels(delivery data.Delivery, notification data.Notifi
 		return []string{*notification.Channel}, nil
 	}
 
-	//if delivery.DestinationType == data.NotificationDestinationAccount {
-	//	channels, err := p.settingsProvider.GetChannels(delivery.Destination)
-	//	if err != nil {
-	//		return nil, errors.Wrap(err, "failed to get channels priority from settings")
-	//	}
-	//	if channels != nil {
-	//		return channels, nil
-	//	}
-	//}
+	if delivery.DestinationType == data.NotificationDestinationAccount {
+		channels, err := p.settingsProvider.GetChannels(delivery.Destination)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get channels priority from settings")
+		}
+		if len(channels) == 0 {
+			return channels, nil
+		}
+	}
 
 	return p.notificatorCfg.DefaultChannelsPriority, nil
 }
@@ -204,4 +202,12 @@ func (p *processor) getIdentifier(channel string, delivery data.Delivery) (ident
 	}
 
 	return *id, nil
+}
+
+func getLoggerFields(delivery data.Delivery) map[string]interface{} {
+	return map[string]interface{}{
+		"delivery_id":     delivery.ID,
+		"notification_id": delivery.NotificationID,
+		"destination":     delivery.Destination,
+	}
 }

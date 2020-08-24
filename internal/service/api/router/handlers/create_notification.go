@@ -47,9 +47,9 @@ func CreateNotification(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if request.Data.Attributes.Priority != nil {
-			notification.Priority = data.NotificationPriority(*request.Data.Attributes.Priority)
+			notification.Priority = *request.Data.Attributes.Priority
 		} else {
-			notification.Priority = data.NotificationsPriorityMedium
+			notification.Priority = resources.NotificationsPriorityMedium
 		}
 
 		resultNotification, err = q.Insert(notification)
@@ -63,7 +63,7 @@ func CreateNotification(w http.ResponseWriter, r *http.Request) {
 				NotificationID:  resultNotification.ID,
 				Destination:     destination.ID,
 				DestinationType: string(destination.Type), // TODO: Use string instead of relation type
-				Status:          data.DeliveryStatusNotSent,
+				Status:          resources.DeliveryStatusNotSent,
 			}
 		}
 
@@ -95,7 +95,7 @@ func newNotificationModel(notification data.Notification, deliveries []data.Deli
 			Topic:        notification.Topic,
 			Token:        notification.Token,
 			Channel:      notification.Channel,
-			Priority:     int32(notification.Priority), // TODO: Use enums from resources
+			Priority:     notification.Priority,
 			Message:      resources.Message(notification.Message),
 		},
 		Relationships: resources.NotificationRelationships{

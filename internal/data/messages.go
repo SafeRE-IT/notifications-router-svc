@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/jmoiron/sqlx/types"
-
 	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
 )
 
@@ -31,6 +29,7 @@ func (m *Message) Scan(src interface{}) error {
 }
 
 type TemplateMessageAttributes struct {
-	Payload *types.JSONText `json:"payload"`
-	Locale  *string         `json:"locale"`
+	Payload *json.RawMessage `json:"payload"`
+	Locale  *string          `json:"locale"`
+	Files   []string         `json:"files"`
 }

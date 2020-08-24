@@ -11,8 +11,6 @@ import (
 
 	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
-
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/router/requests"
@@ -49,7 +47,7 @@ func CancelNotification(w http.ResponseWriter, r *http.Request) {
 	}
 
 	deliveries, err := helpers.DeliveriesQ(r).
-		SetStatus(data.DeliveryStatusCanceled).
+		SetStatus(resources.DeliveryStatusCanceled).
 		FilterByNotificationID(notification.ID).
 		Update()
 	if err != nil {

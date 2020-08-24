@@ -17,6 +17,7 @@ allOf:
             type: string
           status:
             type: string
+            format: DeliveryStatus
             enum:
               - not_sent
               - failed

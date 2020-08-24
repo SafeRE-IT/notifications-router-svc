@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
+
 	sq "github.com/Masterminds/squirrel"
 	"gitlab.com/distributed_lab/kit/pgdb"
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
@@ -80,7 +82,7 @@ func (q *deliveriesQ) FilterByDestinationType(destinationTypes ...string) data.D
 	return q
 }
 
-func (q *deliveriesQ) FilterByStatus(statuses ...data.DeliveryStatus) data.DeliveriesQ {
+func (q *deliveriesQ) FilterByStatus(statuses ...resources.DeliveryStatus) data.DeliveriesQ {
 	stmt := sq.Eq{"deliveries.status": statuses}
 	q.sql = q.sql.Where(stmt)
 	q.sqlUpdate = q.sqlUpdate.Where(stmt)
@@ -115,7 +117,7 @@ func (q *deliveriesQ) JoinNotification() data.DeliveriesQ {
 	return q
 }
 
-func (q *deliveriesQ) SetStatus(status data.DeliveryStatus) data.DeliveriesQ {
+func (q *deliveriesQ) SetStatus(status resources.DeliveryStatus) data.DeliveriesQ {
 	q.sqlUpdate = q.sqlUpdate.Set("status", status)
 	return q
 }
