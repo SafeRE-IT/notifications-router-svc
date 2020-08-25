@@ -175,7 +175,7 @@ func (p *processor) getChannels(delivery data.Delivery, notification data.Notifi
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get channels priority from settings")
 		}
-		if len(channels) == 0 {
+		if len(channels) > 0 {
 			return channels, nil
 		}
 	}
