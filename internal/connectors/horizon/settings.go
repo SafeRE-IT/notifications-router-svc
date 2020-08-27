@@ -34,6 +34,12 @@ func (c *Connector) IsTopicEnabled(accountId, topic string) (bool, error) {
 		return false, errors.Wrap(err, "failed to unmarshal notification settings")
 	}
 
+	// Check if user disabled all topics
+	allEnabled, ok := availability["all_topics"]
+	if ok && !allEnabled {
+		return false, nil
+	}
+
 	enabled, ok := availability[topic]
 	if !ok {
 		return true, nil
