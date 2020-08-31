@@ -67,9 +67,9 @@ func (p *processor) Run(ctx context.Context) error {
 	running.WithBackOff(ctx, p.log,
 		serviceName,
 		p.processNotifications,
-		10*time.Second,
-		10*time.Second,
-		10*time.Second,
+		3*time.Second,
+		3*time.Second,
+		3*time.Second,
 	)
 	return nil
 }
