@@ -111,7 +111,7 @@ func (q *deliveriesQ) OrderByPriority(order string) data.DeliveriesQ {
 
 // TODO: Find better way to join notification in different filters
 func (q *deliveriesQ) JoinNotification() data.DeliveriesQ {
-	stmt := fmt.Sprintf("%s as notification on notification.id = deliveries.id",
+	stmt := fmt.Sprintf("%s as notification on notification.id = deliveries.notification_id",
 		notificationsTableName)
 	q.sql = q.sql.Join(stmt)
 	return q
