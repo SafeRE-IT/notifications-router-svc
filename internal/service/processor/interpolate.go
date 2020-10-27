@@ -3,7 +3,7 @@ package processor
 import (
 	"bytes"
 	"encoding/json"
-	"html/template"
+	"text/template"
 
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
