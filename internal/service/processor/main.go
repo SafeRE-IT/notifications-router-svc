@@ -157,6 +157,11 @@ func (p *processor) sendNotification(channel string, delivery data.Delivery, not
 		return errors.Wrap(err, "failed to get notifications connector")
 	}
 
+	p.log.WithFields(map[string]interface{}{
+		"channel": channel,
+		"message": message,
+	}).Debug("Sending message")
+
 	err = connector.SendNotification(id, message)
 	if err != nil {
 		return errors.Wrap(err, "failed to send notification")
