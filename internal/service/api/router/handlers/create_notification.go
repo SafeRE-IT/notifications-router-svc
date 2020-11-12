@@ -21,6 +21,7 @@ import (
 func CreateNotification(w http.ResponseWriter, r *http.Request) {
 	request, err := requests.NewCreateNotificationRequest(r)
 	if err != nil {
+		helpers.Log(r).WithError(err).Info("wrong request")
 		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
