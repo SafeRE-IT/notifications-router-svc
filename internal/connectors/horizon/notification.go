@@ -9,7 +9,8 @@ import (
 )
 
 type MessageRequest struct {
-	Data Message `json:"data"`
+	Data    Message `json:"data"`
+	Channel string  `json:"channel"`
 }
 
 type Message struct {
@@ -31,7 +32,7 @@ func (c *Connector) SendMessage(m MessageRequest) error {
 	var raw json.RawMessage
 	err = c.connector.PostJSON(path, m, context.TODO(), &raw)
 	if err != nil {
-		errors.Wrap(err, "failed to send message")
+		return errors.Wrap(err, "failed to send message")
 	}
 
 	return nil
