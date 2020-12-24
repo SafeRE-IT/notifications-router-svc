@@ -29,7 +29,7 @@ type restNotificationsConnector struct {
 	client   *base.Connector
 }
 
-func (c *restNotificationsConnector) SendNotification(identifier identifier.Identifier, message data.Message) error {
+func (c *restNotificationsConnector) SendNotification(identifier identifier.Identifier, message data.Message, channel string) error {
 	path, err := url.Parse("notifications")
 	if err != nil {
 		return errors.Wrap(err, "failed to parse url")
@@ -40,6 +40,7 @@ func (c *restNotificationsConnector) SendNotification(identifier identifier.Iden
 			Type: createNotificationType,
 			Attributes: createNotificationAttributes{
 				Message: message,
+				Channel: channel,
 			},
 			Relationships: createNotificationRelationships{
 				Destination: createNotificationDestination{
@@ -78,6 +79,7 @@ type createNotificationData struct {
 
 type createNotificationAttributes struct {
 	Message data.Message
+	Channel string `json:"channel"`
 }
 
 type createNotificationRelationships struct {

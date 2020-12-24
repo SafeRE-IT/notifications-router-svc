@@ -6,5 +6,5 @@ import (
 )
 
 type NotificationsConnector interface {
-	SendNotification(destination identifier.Identifier, message data.Message) error
+	SendNotification(destination identifier.Identifier, message data.Message, channel string) error
 }
