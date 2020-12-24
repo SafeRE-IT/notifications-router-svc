@@ -64,6 +64,11 @@ func (h *templatesHelper) buildMessage(channel string, delivery data.Delivery, n
 		}
 	}
 
+	result, err = appendChannel(result, channel)
+	if err != nil {
+		return data.Message{}, errors.Wrap(err, "failed to append channel to message")
+	}
+
 	return result, nil
 }
 
@@ -94,6 +99,22 @@ func appendFiles(destMessage data.Message, files []string) (data.Message, error)
 	}
 
 	rawAttrs["files"] = files
+	destMessage.Attributes, err = json.Marshal(rawAttrs)
+	if err != nil {
+		return data.Message{}, errors.Wrap(err, "failed to marshal message attributes")
+	}
+
+	return destMessage, nil
+}
+
+func appendChannel(destMessage data.Message, channel string) (data.Message, error) {
+	var rawAttrs map[string]interface{}
+	err := json.Unmarshal(destMessage.Attributes, &rawAttrs)
+	if err != nil {
+		return data.Message{}, errors.Wrap(err, "failed to unmarshal message attributes")
+	}
+
+	rawAttrs["channel"] = channel
 	destMessage.Attributes, err = json.Marshal(rawAttrs)
 	if err != nil {
 		return data.Message{}, errors.Wrap(err, "failed to marshal message attributes")
