@@ -32,7 +32,7 @@ type NotificationsQ interface {
 
 const (
 	NotificationDestinationAccount = "notification-destination-account"
-	NotificationDestinationEmail   = "notidication-destination-email"
+	NotificationDestinationEmail   = "notification-destination-email"
 	NotificationDestinationPhone   = "notification-destination-phone"
 )
 
