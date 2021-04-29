@@ -4,13 +4,13 @@ import (
 	"context"
 	"net/http"
 	"net/url"
-
-	"gitlab.com/tokend/connectors/signed"
-
-	"github.com/pkg/errors"
+	"time"
 
 	"gitlab.com/distributed_lab/json-api-connector/base"
-
+	"gitlab.com/distributed_lab/json-api-connector/cerrors"
+	"gitlab.com/distributed_lab/logan/v3"
+	"gitlab.com/distributed_lab/logan/v3/errors"
+	"gitlab.com/tokend/connectors/signed"
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
 	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/identifier"
 )
@@ -53,16 +53,26 @@ func (c *restNotificationsConnector) SendNotification(identifier identifier.Iden
 		},
 	}
 
+	postMoment := time.Now()
 	status, response, err := c.client.PostJSON(path, body, context.TODO())
 	if err != nil {
-		return errors.Wrap(err, "failed to make request")
-	}
-	if status < 200 || status >= 300 {
-		responseBody := "empty"
-		if response != nil {
-			responseBody = string(response)
+		if status < 200 || status >= 300 {
+			responseBody := "empty"
+			if response != nil {
+				responseBody = string(response)
+			}
+
+			if cerr, ok := err.(cerrors.Error); ok {
+				responseBody = string(cerr.Body())
+			}
+
+			return errors.Wrap(err, "failed to make request", logan.F{
+				"status":        status,
+				"response_body": responseBody,
+				"time_spent":    time.Since(postMoment).String(),
+			})
 		}
-		return errors.Errorf("request failed, status code - %d, response body - %s", status, responseBody)
+		return errors.Wrap(err, "failed to make request")
 	}
 	return nil
 }
