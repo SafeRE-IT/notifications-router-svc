@@ -9,12 +9,12 @@ type CreateNotification struct {
 	Attributes    CreateNotificationAttributes    `json:"attributes"`
 	Relationships CreateNotificationRelationships `json:"relationships"`
 }
-type CreateNotificationResponse struct {
+type CreateNotificationRequest struct {
 	Data     CreateNotification `json:"data"`
 	Included Included           `json:"included"`
 }
 
-type CreateNotificationListResponse struct {
+type CreateNotificationListRequest struct {
 	Data     []CreateNotification `json:"data"`
 	Included Included             `json:"included"`
 	Links    *Links               `json:"links"`

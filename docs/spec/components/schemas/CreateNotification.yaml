@@ -1,6 +1,7 @@
 allOf:
   - $ref: '#/components/schemas/CreateNotificationKey'
   - type: object
+    x-go-is-request: true
     required: [relationships, attributes]
     properties:
       relationships:
