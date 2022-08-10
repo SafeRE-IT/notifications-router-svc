@@ -1,5 +1,5 @@
 services:
-- docker:dind
+- docker:18-dind
 
 variables:
   IMAGE_NAME: registry.gitlab.com/tokend/notifications/notifications-router-svc:$CI_COMMIT_SHA
