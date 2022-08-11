@@ -27,7 +27,7 @@ registration_api:
   addr: :8080
 
 cop:
-  disabled: true
+  disabled: false
   endpoint: "http://..."
   upstream: "http://..."
   service_name: notifications-router-svc
