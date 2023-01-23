@@ -2,8 +2,8 @@ package processor
 
 import (
 	"github.com/pkg/errors"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/connectors/notifications"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/notificators"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/connectors/notifications"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/notificators"
 )
 
 type notificatorsConnectorProvider struct {

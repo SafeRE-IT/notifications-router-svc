@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/cli"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/cli"
 )
 
 func main() {

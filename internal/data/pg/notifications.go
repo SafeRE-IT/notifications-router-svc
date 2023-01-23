@@ -10,7 +10,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/fatih/structs"
 	"gitlab.com/distributed_lab/kit/pgdb"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/data"
 )
 
 const notificationsTableName = "notifications"

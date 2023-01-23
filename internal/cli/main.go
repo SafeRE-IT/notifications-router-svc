@@ -1,57 +1,57 @@
 package cli
 
 import (
-    "github.com/alecthomas/kingpin"
-    "gitlab.com/distributed_lab/kit/kv"
-    "gitlab.com/distributed_lab/logan/v3"
-    "gitlab.com/tokend/notifications/notifications-router-svc/internal/service"
-    "gitlab.com/tokend/notifications/notifications-router-svc/internal/config"
+	"github.com/alecthomas/kingpin"
+	"gitlab.com/distributed_lab/kit/kv"
+	"gitlab.com/distributed_lab/logan/v3"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/config"
 )
 
 func Run(args []string) bool {
-    log := logan.New()
+	log := logan.New()
 
-    defer func() {
-        if rvr := recover(); rvr != nil {
-            log.WithRecover(rvr).Error("app panicked")
-        }
-    }()
+	defer func() {
+		if rvr := recover(); rvr != nil {
+			log.WithRecover(rvr).Error("app panicked")
+		}
+	}()
 
-    cfg := config.New(kv.MustFromEnv())
-    log = cfg.Log()
+	cfg := config.New(kv.MustFromEnv())
+	log = cfg.Log()
 
-    app := kingpin.New("notifications-router-svc", "")
+	app := kingpin.New("notifications-router-svc", "")
 
-    runCmd := app.Command("run", "run command")
-    serviceCmd := runCmd.Command("service", "run service") // you can insert custom help
+	runCmd := app.Command("run", "run command")
+	serviceCmd := runCmd.Command("service", "run service") // you can insert custom help
 
-    migrateCmd := app.Command("migrate", "migrate command")
-    migrateUpCmd := migrateCmd.Command("up", "migrate db up")
-    migrateDownCmd := migrateCmd.Command("down", "migrate db down")
+	migrateCmd := app.Command("migrate", "migrate command")
+	migrateUpCmd := migrateCmd.Command("up", "migrate db up")
+	migrateDownCmd := migrateCmd.Command("down", "migrate db down")
 
-    // custom commands go here...
+	// custom commands go here...
 
-    cmd, err := app.Parse(args[1:])
-    if err != nil {
-        log.WithError(err).Error("failed to parse arguments")
-        return false
-    }
+	cmd, err := app.Parse(args[1:])
+	if err != nil {
+		log.WithError(err).Error("failed to parse arguments")
+		return false
+	}
 
-    switch cmd {
-    case serviceCmd.FullCommand():
-        service.Run(cfg)
-    case migrateUpCmd.FullCommand():
-        err = MigrateUp(cfg)
-    case migrateDownCmd.FullCommand():
-        err = MigrateDown(cfg)
-    // handle any custom commands here in the same way
-    default:
-        log.Errorf("unknown command %s", cmd)
-        return false
-    }
-    if err != nil {
-        log.WithError(err).Error("failed to exec cmd")
-        return false
-    }
-    return true
+	switch cmd {
+	case serviceCmd.FullCommand():
+		service.Run(cfg)
+	case migrateUpCmd.FullCommand():
+		err = MigrateUp(cfg)
+	case migrateDownCmd.FullCommand():
+		err = MigrateDown(cfg)
+	// handle any custom commands here in the same way
+	default:
+		log.Errorf("unknown command %s", cmd)
+		return false
+	}
+	if err != nil {
+		log.WithError(err).Error("failed to exec cmd")
+		return false
+	}
+	return true
 }

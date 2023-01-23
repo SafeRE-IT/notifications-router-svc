@@ -4,11 +4,11 @@ import (
 	"errors"
 	"time"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
+	"github.com/SafeRE-IT/notifications-router-svc/resources"
 
 	"gitlab.com/distributed_lab/kit/pgdb"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data/pg"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/data"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/data/pg"
 )
 
 func newQuerier(db *pgdb.DB) *querier {

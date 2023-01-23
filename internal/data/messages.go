@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
+	"github.com/SafeRE-IT/notifications-router-svc/resources"
 )
 
 const (

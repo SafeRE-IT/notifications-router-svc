@@ -3,14 +3,14 @@ package processor
 import (
 	"encoding/json"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/settings"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/providers/settings"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/templates"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/providers/templates"
 
 	"gitlab.com/distributed_lab/logan/v3/errors"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/config"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/config"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/data"
 )
 
 type templatesHelper struct {

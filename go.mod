@@ -1,4 +1,4 @@
-module gitlab.com/tokend/notifications/notifications-router-svc
+module github.com/SafeRE-IT/notifications-router-svc
 
 go 1.14
 

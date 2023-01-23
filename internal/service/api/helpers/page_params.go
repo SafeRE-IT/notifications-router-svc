@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"gitlab.com/distributed_lab/kit/pgdb"
-	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
+	"github.com/SafeRE-IT/notifications-router-svc/resources"
 )
 
 const (

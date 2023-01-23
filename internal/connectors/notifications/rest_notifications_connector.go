@@ -11,8 +11,8 @@ import (
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/tokend/connectors/signed"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/identifier"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/data"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/providers/identifier"
 )
 
 const createNotificationType = "create-notification"

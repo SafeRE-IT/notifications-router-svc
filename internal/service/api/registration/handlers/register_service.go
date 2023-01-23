@@ -3,13 +3,13 @@ package handlers
 import (
 	"net/http"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
+	"github.com/SafeRE-IT/notifications-router-svc/resources"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/registration/requests"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/api/registration/requests"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/helpers"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/api/helpers"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/notificators"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/notificators"
 
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"

@@ -8,15 +8,15 @@ import (
 
 	"github.com/asaskevich/govalidator"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/types"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/types"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/data"
 
 	validation "github.com/go-ozzo/ozzo-validation"
 
 	"gitlab.com/distributed_lab/logan/v3/errors"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
+	"github.com/SafeRE-IT/notifications-router-svc/resources"
 )
 
 type CreateNotificationRequest struct {
@@ -59,7 +59,7 @@ func validateDestinationsList(destinations []resources.Key) validation.Errors {
 
 	for i, destination := range destinations {
 		validationErrors[fmt.Sprintf("/data/relationships/destinations/data/%d", i)] =
-			// TODO: Use string instead of type
+		// TODO: Use string instead of type
 			validateDestination(string(destination.Type), destination.ID)
 	}
 

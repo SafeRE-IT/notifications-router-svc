@@ -4,14 +4,14 @@ import (
 	"context"
 	"net/http"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/notificators"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/notificators"
 
 	regources "gitlab.com/tokend/regources/generated"
 
 	"gitlab.com/tokend/go/doorman"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/data"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/connectors/horizon"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/connectors/horizon"
 
 	"gitlab.com/distributed_lab/logan/v3"
 )

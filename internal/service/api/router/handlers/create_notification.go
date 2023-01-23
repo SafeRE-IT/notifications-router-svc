@@ -4,18 +4,18 @@ import (
 	"net/http"
 	"time"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/helpers"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/api/helpers"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
+	"github.com/SafeRE-IT/notifications-router-svc/resources"
 
 	"gitlab.com/distributed_lab/logan/v3/errors"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/data"
 
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/router/requests"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/api/router/requests"
 )
 
 func CreateNotification(w http.ResponseWriter, r *http.Request) {

@@ -7,16 +7,16 @@ import (
 
 	"github.com/pkg/errors"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/registration/handlers"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/api/registration/handlers"
 
 	"gitlab.com/distributed_lab/ape"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/helpers"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/api/helpers"
 
 	"github.com/go-chi/chi"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/config"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/notificators"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/types"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/config"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/notificators"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/types"
 )
 
 func NewRegistrationAPI(cfg config.Config, notificatorsStorage notificators.NotificatorsStorage) types.Service {
