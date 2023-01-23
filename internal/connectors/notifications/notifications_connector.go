@@ -1,8 +1,8 @@
 package notifications
 
 import (
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/identifier"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/data"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/providers/identifier"
 )
 
 type NotificationsConnector interface {

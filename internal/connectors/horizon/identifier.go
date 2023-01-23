@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/data"
 
 	"github.com/pkg/errors"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/identifier"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/providers/identifier"
 )
 
 const (

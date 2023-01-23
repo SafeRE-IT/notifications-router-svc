@@ -8,12 +8,12 @@ import (
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/tokend/go/doorman"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/config"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/connectors/horizon"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data/pg"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/helpers"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/router/handlers"
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/types"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/config"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/connectors/horizon"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/data/pg"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/api/helpers"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/api/router/handlers"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/types"
 )
 
 func NewRouterAPI(cfg config.Config) types.Service {

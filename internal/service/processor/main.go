@@ -4,19 +4,19 @@ import (
 	"context"
 	"time"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
+	"github.com/SafeRE-IT/notifications-router-svc/resources"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/settings"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/providers/settings"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/types"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/types"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/templates"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/providers/templates"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/providers/identifier"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/providers/identifier"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/notificators"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/notificators"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/connectors/horizon"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/connectors/horizon"
 
 	"gitlab.com/distributed_lab/logan/v3/errors"
 
@@ -24,9 +24,9 @@ import (
 
 	"gitlab.com/distributed_lab/logan/v3"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/data"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/data"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/config"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/config"
 )
 
 const (

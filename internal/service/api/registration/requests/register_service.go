@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/resources"
+	"github.com/SafeRE-IT/notifications-router-svc/resources"
 
 	"github.com/go-ozzo/ozzo-validation/is"
 

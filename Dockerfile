@@ -1,8 +1,13 @@
-FROM golang:1.14
+FROM golang:1.18-alpine
 
-WORKDIR /go/src/gitlab.com/tokend/notifications/notifications-router-svc
+RUN apk add --no-cache git build-base
+
+WORKDIR /go/src/github.com/SafeRE-IT/notifications-router-svc
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o /usr/local/bin/notifications-router-svc gitlab.com/tokend/notifications/notifications-router-svc
+
+RUN go mod download
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o /usr/local/bin/notifications-router-svc github.com/SafeRE-IT/notifications-router-svc
 
 ###
 

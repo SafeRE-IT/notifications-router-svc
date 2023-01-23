@@ -4,17 +4,17 @@ import (
 	"context"
 	"sync"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/router"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/api/router"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/api/registration"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/api/registration"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/types"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/types"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/notificators"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/notificators"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/service/processor"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/service/processor"
 
-	"gitlab.com/tokend/notifications/notifications-router-svc/internal/config"
+	"github.com/SafeRE-IT/notifications-router-svc/internal/config"
 )
 
 func runService(service types.Service, wg *sync.WaitGroup) {

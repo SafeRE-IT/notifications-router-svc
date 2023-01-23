@@ -5,4 +5,4 @@
 // and any other packr generated files.
 package assets
 
-import _ "gitlab.com/tokend/notifications/notifications-router-svc/internal/assets/packrd"
+import _ "github.com/SafeRE-IT/notifications-router-svc/internal/assets/packrd"
